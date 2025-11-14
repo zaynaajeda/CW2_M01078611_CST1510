@@ -74,10 +74,14 @@ def user_exists(username):
 
 #Login function
 def login_user(username, password):
+    #Check lockout status of user
     is_unlocked, remaining_time = manage_lockout_status(username, 'check')
 
+    #Handle case where account is locked
     if not is_unlocked:
+        #Error message for locked account
         print(f"Error: Account is locked! Try again in {remaining_time} seconds")
+        #Return False and None for role
         return False, None
 
     #Handle case where no users are registered yet
@@ -95,43 +99,60 @@ def login_user(username, password):
 
                     #Verify password
                     if verify_password(password, hash):
+                        #Reset lockout status on successful login
                         manage_lockout_status(username, 'reset')
                         return True, role
                     else:
                         #Error message for wrong password
                         print("Error: Invalid password.")
+                        #Increment failed attempts
                         manage_lockout_status(username, 'increment_fail')
                 else:
+                    #Increment failed attempts for non-matching username
                     manage_lockout_status(username, 'increment_fail')
+                    #Error message for non-existing username
                     print(f"Error: Username {username} not found")
+        #Return False and None for role if login fails
         return False, None
+    #Exception handling in case file does not exist
     except FileNotFoundError:
         return False, None
 
+#Username validation function
 def validate_username(username):
+    #Check length of username
     if not 3 <= len(username) <= 20:
+        #Tuple return with False and error message
         return False, "Username must contain between 3 and 20 characters"
 
+    #Check for allowed characters in username
     if not re.fullmatch(r"^[a-zA-Z0-9_]+$", username):
         return (False, "Username can only contain letters, numbers, and underscores(_)")
     return True, ""
 
+#Password validation function
 def validate_password(password):
+    #Check length of password
     if not 6 < len(password) < 50:
         return False, "Password must contain between 6 and 50 characters"
 
+    #Check for at least one uppercase letter
     if not re.search(r"[A-Z]", password):
         return False, "Password must contain at least one uppercase letter (A-Z)"
 
+    #Check for at least one lowercase letter
     if not re.search(r"[a-z]", password):
         return False, "Password must contain at least one lowercase letter (a-z)"
 
+    #Check for at least one digit
     if not re.search(r"\d", password):
         return False, "Password must contain at least one digit (0-9)"
 
+    #Check for at least one special character
     if not re.search(r"[a-zA-Z0-9\s]", password):
         return False, "Password must contain at least one special character"
     
+    #If all checks pass, return True
     return True, ""
 
 #Function to determine strength of password
@@ -172,41 +193,64 @@ def check_password_strength(password):
     else:
         return "Weak"
 
+#Function to manage lockout status of user
 def manage_lockout_status(username, action):
+    #Empty dictionary to store lockout data
     lockouts = {}
+
+    #Read lockout data from file
     try:
         with open(LOCKOUT_FILE,"r") as f:
+            #Iterate through each line in file
             for line in f:
+                #Store user, attempts and timestamp in variables
                 user, attempts, timestamp = line.strip().split(',')
+                #Add data to dictionary
                 lockouts[user] = {'attempts': int(attempts), 'timestamp': float(timestamp)}
+    #Exception handling in case file does not exist
     except FileNotFoundError:
         pass
 
+    #Get current time
     current_time = time.time()
+    #Get user status from dictionary, defaulting to 0 attempts and 0 timestamp
     user_status = lockouts.get(username, {'attempts': 0, 'timestamp': 0.0})
 
+    #Check if user is currently locked out
     if user_status['timestamp'] > current_time:
+        #Calculate remaining lockout time
         remaining_time = int(user_status['timestamp'] - current_time)
+        #Tuple return with False and remaining time
         return (False, remaining_time)
     
+    #Perform action based on input
     if action == 'increment_fail':
+        #Increment failed attempts
         user_status['attempts'] += 1
 
+        #Check if maximum attempts reached
         if user_status['attempts'] >= MAX_ATTEMPTS:
+            #Set lockout timestamp
             user_status['timestamp'] = current_time + LOCKOUT_DURATION_SECONDS
+            #Reset attempts after lockout
             user_status['attempts'] = 0
 
+            #Inform user about lockout
             print(f"Account for user {username} is locked for 5 minutes.")
 
+    #Reset attempts and timestamp after successful login
     elif action == 'reset':
+        #Reset attempts and timestamp
         user_status['attempts'] = 0
         user_status['timestamp'] = 0.0
 
+    #Save updated lockout data back to file
     lockouts[username] = user_status
     with open(LOCKOUT_FILE, "w") as f:
         for user, status in lockouts.items():
             f.write(f"{user}, {status['attempts']},{status['timestamp']}\n")
 
+    #Return tuple indicating user is not locked out
     return (True, 0)
 
 #Function to generate unique token and save to a new file
@@ -294,41 +338,55 @@ def main():
 
             # Validate username
             is_valid, error_msg = validate_username(username)
+            #Display error message if username is invalid
             if not is_valid:
                 print(f"Error: {error_msg}")
                 continue
 
+            #User role selection
             print("\n--- USER ROLE SELECTION ---")
             user_role = input("Enter user role (user/admin/analyst): ")
+            #Convert role to lowercase
             user_role = user_role.lower()
 
+            #Validate user role
             while user_role not in valid_roles:
                 print("Warning: Invalid role.")
-
+                #Prompt user to enter a valid role
                 user_role = input("Enter user role (user/admin/analyst): ")
 
-            password = input("Enter a password: ").strip()
+            #Prompt user to enter password
+            password = input("\nEnter a password: ").strip()
 
             # Validate password
             is_valid, error_msg = validate_password(password)
 
+            #Display error message if password is invalid
             if not is_valid:
                 print(f"Error: {error_msg}")
                 continue
                 
+            #Output password strength    
+            print("\n--- PASSWORD STRENGTH CHECK ---")
+            print(f"Password Strength: {check_password_strength(password)}")
+
+            #Prompt user to enter a stronger password if password is weak
             while check_password_strength(password) == 'Weak':
                 print('Warning: Password is not strong enough. It must contain one uppercase letter, lowercase letter, digit, special character.')
 
+                #Prompt user to enter a new password
                 password = input("Enter a password: ").strip()
 
                 # Validate password
                 is_valid, error_msg = validate_password(password)
+                #Display error message if password is invalid
                 if not is_valid:
                     print(f"Error: {error_msg}")
                     continue
 
             # Confirm password
-            password_confirm = input("Confirm password: ").strip()
+            password_confirm = input("\nConfirm password: ").strip()
+            #Error message for non-matching passwords
             if password != password_confirm:
                 print("Error: Passwords do not match.")
                 continue
@@ -345,7 +403,9 @@ def main():
             # Attempt login
             is_logged_in, role = login_user(username, password)
 
+            #Successful login
             if is_logged_in:
+                #Inform user about successful login and his role
                 print("\nYou are now logged in.")
                 print(f"Success: Welcome, {username}!")
                 print(f"Role: {role}")
@@ -371,7 +431,9 @@ def main():
             break
         
         else:
+            # Invalid option
             print("\nError: Invalid option. Please select 1, 2, or 3.")
 
+#Run the main function
 if __name__ == "__main__":
     main()

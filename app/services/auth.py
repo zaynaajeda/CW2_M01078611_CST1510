@@ -1,8 +1,13 @@
 import bcrypt
 import os
 import re
+import time
 
 USER_DATA_FILE = "users.txt"
+LOCKOUT_FILE = "lockouts.txt"
+MAX_ATTEMPTS = 3
+#Lockout time of 5 minutes
+LOCKOUT_DURATION_SECONDS = 300
 valid_roles = ["user", "admin", "analyst"]
 
 def hash_password(plain_text_password):
@@ -39,6 +44,12 @@ def user_exists(username):
        return False
 
 def login_user(username, password):
+    is_unlocked, remaining_time = manage_lockout_status(username, 'check')
+
+    if not is_unlocked:
+        print(f"Error: Account is locked! Try again in {remaining_time} seconds")
+        return False, None
+
     try:
         with open(USER_DATA_FILE, "r") as f:
             for line in f.readlines():
@@ -47,8 +58,13 @@ def login_user(username, password):
                 
                 if user == username:
                     if verify_password(password, hash):
+                        manage_lockout_status(username, 'reset')
                         return True, role
+                    else:
+                        print("Error: Invalid password.")
+                        manage_lockout_status(username, 'increment_fail')
                 else:
+                    manage_lockout_status(username, 'increment_fail')
                     print(f"Error: Username {username} not found")
         return False, None
     except FileNotFoundError:
@@ -117,6 +133,43 @@ def check_password_strength(password):
         return "Medium"
     else:
         return "Weak"
+
+def manage_lockout_status(username, action):
+    lockouts = {}
+    try:
+        with open(LOCKOUT_FILE,"r") as f:
+            for line in f:
+                user, attempts, timestamp = line.strip().split(',')
+                lockouts[user] = {'attempts': int(attempts), 'timestamp': float(timestamp)}
+    except FileNotFoundError:
+        pass
+
+    current_time = time.time()
+    user_status = lockouts.get(username, {'attempts': 0, 'timestamp': 0.0})
+
+    if user_status['timestamp'] > current_time:
+        remaining_time = int(user_status['timestamp'] - current_time)
+        return (False, remaining_time)
+    
+    if action == 'increment_fail':
+        user_status['attempts'] += 1
+
+        if user_status['attempts'] >= MAX_ATTEMPTS:
+            user_status['timestamp'] = current_time + LOCKOUT_DURATION_SECONDS
+            user_status['attempts'] = 0
+
+            print(f"Account for user {username} is locked for 5 minutes.")
+
+    elif action == 'reset':
+        user_status['attempts'] = 0
+        user_status['timestamp'] = 0.0
+
+    lockouts[username] = user_status
+    with open(LOCKOUT_FILE, "w") as f:
+        for user, status in lockouts.items():
+            f.write(f"{user}, {status['attempts']},{status['timestamp']}\n")
+
+    return (True, 0)
 
 def display_menu():
     """Displays the main menu options."""
@@ -202,8 +255,6 @@ def main():
 
                 # Optional: Ask if they want to logout or exit
                 input("\nPress Enter to return to main menu...")
-            else:
-                print("Error: Invalid password.")
 
         elif choice == '3':
             # Exit

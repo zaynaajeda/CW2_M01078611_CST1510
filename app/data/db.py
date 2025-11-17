@@ -18,6 +18,7 @@ def connect_database(db_path=DB_PATH):
     """
     return sqlite3.connect(str(db_path))
 
+#CSV loading function
 def load_csv_to_table(conn, csv_path, table_name):
   #Checks if CSV file exists
   if os.path.exists(csv_path):

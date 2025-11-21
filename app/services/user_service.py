@@ -78,7 +78,7 @@ def login_user(username, password):
     else:
         return False, "Invalid password."
 
-def migrate_users_from_file(conn, filepath='DATA/ users.txt'):
+def migrate_users_from_file(conn, filepath):
     """
     Migrate users from users.txt to the database.
 

@@ -6,4 +6,5 @@ conn = connect_database()
 create_all_tables(conn)
 conn.close()
 
+print("hello")
 

@@ -14,9 +14,9 @@ def main():
     
     from app.services.user_service import register_user, login_user, migrate_users_from_file
     from app.data.incidents import insert_incident, get_all_incidents
-    DB_PATH = Path("DATA")
+    DB_DIR = Path("DATA")
     # 2. Migrate users
-    migrate_users_from_file(conn, DB_PATH.parent / "users.txt")
+    migrate_users_from_file(conn, DB_DIR / "users.txt")
     
     # 3. Test authentication
     success, msg = register_user("alice", "SecurePass123!", "analyst")

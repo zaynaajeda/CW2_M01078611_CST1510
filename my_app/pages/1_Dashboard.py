@@ -14,7 +14,8 @@ from app.data.incidents import (
     get_all_incidents,
     insert_incident,
     update_incident,
-    delete_incident)
+    delete_incident,
+    get_incidents_by_type_count)
 
 #Webpage title and icon
 st.set_page_config(page_title="Dashboard", page_icon="📊", layout="wide")
@@ -43,8 +44,6 @@ if not st.session_state.logged_in:
 
 # Dashboard content for logged-in users
 st.title("Dashboard")
-
-st.divider()
 
 #Sidebar for domain selection
 with st.sidebar:
@@ -79,22 +78,43 @@ if domain == "-- Select a Domain --":
     st.stop()
 
 else:
-    #Connect to intelligence database
-    conn = connect_database("DATA/intelligence.db")
+    #Connect to the shared intelligence platform database
+    conn = connect_database()
 
     #Verify if domain is Cyber Security
     if domain == "Cyber Security":
         st.subheader("Cyber Security")
 
-        st.markdown("### Overview of Incidents")
+        st.divider()
+
+        st.markdown("##### Overview of Incidents")
         #Fetch all incidents from database
         incidents = get_all_incidents()
 
         #Display incidents in a table
         st.dataframe(incidents, use_container_width=True)
 
-        st.markdown("#### Add New Incident")
+        st.markdown("#### Trends")
+        #Take number of incidents by type
+        incidents_by_type = get_incidents_by_type_count(conn)
+        
+        #Verify if function successfully returned data
+        if incidents_by_type.empty == False:
+            st.markdown("##### Incidents by Type")
+
+            #Generate bar chart for incident types
+            incident_type_data = incidents_by_type.set_index("incident_type")
+            st.bar_chart(incident_type_data, use_container_width=True)
+
+        else:
+            #Inform user that no data is available
+            st.info("No incident data available to plot.")
+
+        st.markdown("##### Add New Incident")
+
+        #Form to add new incident
         with st.form("new_incident"):
+            #Prompt user to enter incident details
             incident_type = st.text_input("Incident Type")
             severity = st.selectbox("Severity", ["Low", "Medium", "High", "Critical"])
             status = st.selectbox("Status", ["Open", "In Progress", "Resolved", "Closed"])
@@ -125,10 +145,5 @@ else:
 
         with col3:
             st.metric("Incidents", 3, delta="+1")
-
-        
-        threat_data = {"Malware": 89, "Phishing": 67, "DDoS": 45, "Intrusion": 46}
-
-        st.bar_chart(threat_data)
 
     conn.commit()

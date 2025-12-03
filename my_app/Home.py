@@ -2,19 +2,24 @@ import streamlit as st
 import os
 import sys 
 
+#Adjust path to main project directory
 ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.append(ROOT_DIR)
 
-from app.services.auth import hash_password, verify_password
+from app.services.auth import (
+    register_user,
+    login_user,
+    user_exists,
+    validate_username,
+    validate_password,
+    check_password_strength,
+    valid_roles,
+)
 
 #Webpage title and icon
 st.set_page_config(page_title="Login/Register", page_icon="🔐", layout="centered")
 
 #Initialising session state variables
-#Initialise users dictionary
-if "users" not in st.session_state:
-    st.session_state.users = {}
-
 #Initialise login status
 if "logged_in" not in st.session_state:
     st.session_state.logged_in = False
@@ -50,34 +55,31 @@ with tab_login:
 
     #Login button
     if st.button("Login"):
-        #Get users dictionary from session state
-        users = st.session_state.users
-        #Check if username exists
-        if login_username in users:
-            #Check if password matches
-            if users[login_username] == login_password:
+        if not login_username or not login_password:
+            st.warning("Please enter both username and password.")
+        else:
+            is_authenticated, role_or_message = login_user(login_username, login_password)
+            if is_authenticated:
                 #Set session state 
                 st.session_state.logged_in = True
                 st.session_state.username = login_username
 
                 #Success message for login
-                st.success(f"Logged in as **{login_username}**.")
+                st.success(f"Logged in as **{login_username}** ({role_or_message}).")
 
                 if st.button("Go to dashboard"):
                     st.switch_page("pages/1_Dashboard.py")
-
             else:
-                st.error("Incorrect password.")
-        else:
-            st.error("Invalid username.")
+                st.error(role_or_message or "Invalid username or password.")
 
 #Register Tab
 with tab_register:
     #Subheading
     st.subheader("Create a new account")
 
-    #Prompt for new username and password
+    #Prompt for new username, role and password
     new_username = st.text_input("Choose a username", key="register_username")
+    selected_role = st.selectbox("Select role", valid_roles, key="register_role")
     new_password = st.text_input("Choose a password", type="password", key="register_password")
     confirm_password = st.text_input("Confirm password", type="password", key="register_confirm")
 
@@ -93,13 +95,39 @@ with tab_register:
             #Password mismatch
             st.error("Passwords do not match. Please try again.")
 
-        #Verify if username already exists
-        elif new_username in st.session_state.users:
-            #Username taken
-            st.error("Username already exists. Choose a different one.")
-        
+        #Username and password validation
         else:
-            #Add new user to users dictionary
-            st.session_state.users[new_username] = new_password
-            st.success("Account created!")
-            st.info("Go to Login tab to sign in.")
+            #Validate username
+            is_valid_username, username_error = validate_username(new_username)
+
+            #Check if username is valid
+            if not is_valid_username:
+                #Display error message
+                st.error(username_error)
+
+            #Inform if username already exists
+            elif user_exists(new_username):
+                st.error("Username already exists. Choose a different one.")
+            else:
+                #Validate password
+                is_valid_password, password_error = validate_password(new_password)
+
+                #Check if password is valid
+                if not is_valid_password:
+                    #Display error message
+                    st.error(password_error)
+                else:
+                    #Check password strength
+                    password_strength = check_password_strength(new_password)
+
+                    #Verify if password is weak
+                    if password_strength == "Weak":
+                        #Display warning for weak password
+                        st.warning("Password is too weak. Try using more varied characters.")
+                    else:
+                        success, message = register_user(new_username, new_password, selected_role)
+
+                        if success:
+                            st.success(f"{message} Go to the Login tab to sign in.")
+                        else:
+                            st.error(message or "Registration failed. Please try again.")

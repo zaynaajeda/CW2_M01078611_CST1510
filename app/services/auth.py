@@ -1,15 +1,18 @@
 import bcrypt
-import os
 import re
 import time
 import secrets
+from pathlib import Path
+
+DATA_DIR = Path("DATA")
+DATA_DIR.mkdir(parents=True, exist_ok=True)
 
 #File to store username and hashed password
-USER_DATA_FILE = "users.txt"
+USER_DATA_FILE = DATA_DIR / "users.txt"
 #File to store failed attempts and lockout of users
-LOCKOUT_FILE = "lockouts.txt"
+LOCKOUT_FILE = DATA_DIR / "lockouts.txt"
 #File to store tokens and expiration time
-SESSION_FILE = "sessions.txt"
+SESSION_FILE = DATA_DIR / "sessions.txt"
 #Number of attempts before lockout
 MAX_ATTEMPTS = 3
 #Lockout time of 5 minutes
@@ -40,22 +43,18 @@ def verify_password(plain_text_password, hashed_password):
 
 #Registration function
 def register_user(username, password, role):
-    #Verify if username already exists
-    if user_exists(username):
-        #Error message for existence of user
-        print(f"Error: Username '{username}' already exists")
-        return False
-    
-    #Hash password entered
-    hashed_password = hash_password(password)
+    if role not in valid_roles:
+        return False, f"Invalid role '{role}'."
 
-    #Register new user by adding username and hashed password to users.txt
+    if user_exists(username):
+        return False, f"Username '{username}' already exists."
+
+    hashed_password = hash_password(password).decode("utf-8")
+
     with open(USER_DATA_FILE, "a") as f:
         f.write(f"{username},{hashed_password},{role}\n")
 
-    #Inform user that he was registered
-    print(f"Success: User '{username}' registered successfully!")
-    return True
+    return True, f"User '{username}' registered successfully!"
 
 #User existence check
 def user_exists(username):
@@ -79,44 +78,33 @@ def login_user(username, password):
 
     #Handle case where account is locked
     if not is_unlocked:
-        #Error message for locked account
-        print(f"Error: Account is locked! Try again in {remaining_time} seconds")
-        #Return False and None for role
-        return False, None
+        return False, f"Account is locked. Try again in {remaining_time} seconds."
 
-    #Handle case where no users are registered yet
     try:
         with open(USER_DATA_FILE, "r") as f:
-            #Iterating over each line in file
-            for line in f.readlines():
-                #Storing username, hashed password and role in variables
-                user, hash, role = line.strip().split(',')
+            for line in f:
+                line = line.strip()
+                if not line:
+                    continue
 
-                hash = hash.strip()[2:-1]
-                
-                #Check if current line's username matches input username
+                user, hash_value, role = line.split(',', 2)
+                cleaned_hash = hash_value.strip()
+                if cleaned_hash.startswith("b'") and cleaned_hash.endswith("'"):
+                    cleaned_hash = cleaned_hash[2:-1]
+
                 if user == username:
-
-                    #Verify password
-                    if verify_password(password, hash):
+                    if verify_password(password, cleaned_hash):
                         #Reset lockout status on successful login
                         manage_lockout_status(username, 'reset')
                         return True, role
-                    else:
-                        #Error message for wrong password
-                        print("Error: Invalid password.")
-                        #Increment failed attempts
-                        manage_lockout_status(username, 'increment_fail')
-                else:
-                    #Increment failed attempts for non-matching username
+
                     manage_lockout_status(username, 'increment_fail')
-                    #Error message for non-existing username
-                    print(f"Error: Username {username} not found")
-        #Return False and None for role if login fails
-        return False, None
-    #Exception handling in case file does not exist
+                    return False, "Invalid password."
+
+        #Username not found
+        return False, f"Username '{username}' not found."
     except FileNotFoundError:
-        return False, None
+        return False, "No users have been registered yet."
 
 #Username validation function
 def validate_username(username):
@@ -392,7 +380,8 @@ def main():
                 continue
 
             # Register the user
-            register_user(username, password,user_role)
+            success, message = register_user(username, password, user_role)
+            print(message)
 
         elif choice == '2':
             # Login flow
@@ -401,14 +390,14 @@ def main():
             password = input("Enter your password: ").strip()
 
             # Attempt login
-            is_logged_in, role = login_user(username, password)
+            is_logged_in, role_or_message = login_user(username, password)
 
             #Successful login
             if is_logged_in:
                 #Inform user about successful login and his role
                 print("\nYou are now logged in.")
                 print(f"Success: Welcome, {username}!")
-                print(f"Role: {role}")
+                print(f"Role: {role_or_message}")
 
                 #Create a session token
                 session_token = create_session(username)
@@ -423,6 +412,8 @@ def main():
 
                 # Optional: Ask if they want to logout or exit
                 input("\nPress Enter to return to main menu...")
+            else:
+                print(role_or_message)
 
         elif choice == '3':
             # Exit

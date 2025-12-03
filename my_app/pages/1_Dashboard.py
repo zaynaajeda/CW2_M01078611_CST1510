@@ -2,6 +2,7 @@ import streamlit as st
 import sys
 import os
 import time
+import matplotlib.pyplot as plt
 
 #Adjust path to main project directory
 ROOT_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -121,7 +122,6 @@ else:
                 #Inform user that no data is available
                 st.info("No cyber incident data available.")
 
-        with col2:
             #Take number of incidents by status
             incidents_by_status = get_incidents_by_status(conn)
 
@@ -136,8 +136,30 @@ else:
             else:
                 #Inform user that no data is available
                 st.info("No cyber incident data available.")
-        
-        incidents_by_severity = get_incidents_by_severity(conn)
+
+        with col2:
+            #Take number of incidents by severity
+            incidents_by_severity = get_incidents_by_severity(conn)
+
+            #Verify if function successfully returned data
+            if incidents_by_severity.empty == False:
+                st.markdown("##### Incidents by Severity")
+
+                #Generate pie chart for incident severity
+                fig, ax = plt.subplots(figsize=(2.2, 2.2))
+                ax.pie(
+                    incidents_by_severity["count"],
+                    labels=incidents_by_severity["severity"],
+                    autopct="%1.0f%%",
+                    startangle=90,
+                    textprops={"fontsize": 5},
+                )
+                ax.axis("equal")
+                st.pyplot(fig, use_container_width=False)
+
+            else:
+                #Inform user that no data is available
+                st.info("No cyber incident severity data available.")
 
         st.markdown("##### Add New Incident")
 

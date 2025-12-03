@@ -15,7 +15,8 @@ from app.data.incidents import (
     insert_incident,
     update_incident,
     delete_incident,
-    get_incidents_by_type_count)
+    get_incidents_by_type_count,
+    get_incidents_by_status)
 
 #Webpage title and icon
 st.set_page_config(page_title="Dashboard", page_icon="📊", layout="wide")
@@ -95,6 +96,7 @@ else:
         st.dataframe(incidents, use_container_width=True)
 
         st.markdown("#### Trends")
+
         #Take number of incidents by type
         incidents_by_type = get_incidents_by_type_count(conn)
         
@@ -108,7 +110,22 @@ else:
 
         else:
             #Inform user that no data is available
-            st.info("No incident data available to plot.")
+            st.info("No cyber incident data available.")
+
+        #Take number of incidents by status
+        incidents_by_status = get_incidents_by_status(conn)
+
+        #Verify if function successfully returned data
+        if incidents_by_status.empty == False:
+            st.markdown("##### Incidents by Status")
+
+            #Generate bar chart for incident status
+            incident_status_data = incidents_by_status.set_index("status")
+            st.bar_chart(incident_status_data, use_container_width=True)
+        
+        else:
+            #Inform user that no data is available
+            st.info("No cyber incident data available.")
 
         st.markdown("##### Add New Incident")
 

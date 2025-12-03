@@ -4,6 +4,7 @@ import time
 import secrets
 from pathlib import Path
 
+#Variables to store file paths
 DATA_DIR = Path("DATA")
 DATA_DIR.mkdir(parents=True, exist_ok=True)
 
@@ -43,18 +44,25 @@ def verify_password(plain_text_password, hashed_password):
 
 #Registration function
 def register_user(username, password, role):
+    #Verify if role is valid
     if role not in valid_roles:
+        #Return False and error message for invalid role
         return False, f"Invalid role '{role}'."
 
+    #Check if username already exists
     if user_exists(username):
+        #Return False and error message for existing username
         return False, f"Username '{username}' already exists."
 
+    #Hash password
     hashed_password = hash_password(password).decode("utf-8")
 
+    #Store username, hashed password and role in file
     with open(USER_DATA_FILE, "a") as f:
         f.write(f"{username},{hashed_password},{role}\n")
 
-    return True, f"User '{username}' registered successfully!"
+    #Return True and success message
+    return True, f"Username '{username}' registered successfully as {role}!"
 
 #User existence check
 def user_exists(username):
@@ -80,26 +88,40 @@ def login_user(username, password):
     if not is_unlocked:
         return False, f"Account is locked. Try again in {remaining_time} seconds."
 
+    #Error handling for existence of users.txt
     try:
         with open(USER_DATA_FILE, "r") as f:
+            #Iterate through each line in file
             for line in f:
+                #Remove leading/trailing whitespace
                 line = line.strip()
+                #Skip empty lines
                 if not line:
                     continue
 
+                #Split line into username, hashed password and role
                 user, hash_value, role = line.split(',', 2)
-                cleaned_hash = hash_value.strip()
-                if cleaned_hash.startswith("b'") and cleaned_hash.endswith("'"):
-                    cleaned_hash = cleaned_hash[2:-1]
+                #Clean up hash value
+                hash_pass = hash_value.strip()
 
+                #Remove b prefix and ending ' in hashed password if present
+                if hash_pass.startswith("b'") and hash_pass.endswith("'"):
+                    hash_pass = hash_pass[2:-1]
+
+                #Check if username matches
                 if user == username:
-                    if verify_password(password, cleaned_hash):
+                    #Verify password
+                    if verify_password(password, hash_pass):
                         #Reset lockout status on successful login
                         manage_lockout_status(username, 'reset')
                         return True, role
 
-                    manage_lockout_status(username, 'increment_fail')
-                    return False, "Invalid password."
+                    #Handle invalid password
+                    else:
+                        #Increment failed attempts
+                        manage_lockout_status(username, 'increment_fail')
+                        #Return False and error message
+                        return False, "Invalid password."
 
         #Username not found
         return False, f"Username '{username}' not found."

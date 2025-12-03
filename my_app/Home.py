@@ -58,19 +58,19 @@ with tab_login:
         if not login_username or not login_password:
             st.warning("Please enter both username and password.")
         else:
-            is_authenticated, role_or_message = login_user(login_username, login_password)
+            is_authenticated, role_user = login_user(login_username, login_password)
             if is_authenticated:
                 #Set session state 
                 st.session_state.logged_in = True
                 st.session_state.username = login_username
 
                 #Success message for login
-                st.success(f"Logged in as **{login_username}** ({role_or_message}).")
+                st.success(f"Logged in as **{login_username}** ({role_user}).")
 
                 if st.button("Go to dashboard"):
                     st.switch_page("pages/1_Dashboard.py")
             else:
-                st.error(role_or_message or "Invalid username or password.")
+                st.error(role_user or "Invalid username or password.")
 
 #Register Tab
 with tab_register:
@@ -79,7 +79,7 @@ with tab_register:
 
     #Prompt for new username, role and password
     new_username = st.text_input("Choose a username", key="register_username")
-    selected_role = st.selectbox("Select role", valid_roles, key="register_role")
+    user_role = st.selectbox("Select role", valid_roles, key="register_role")
     new_password = st.text_input("Choose a password", type="password", key="register_password")
     confirm_password = st.text_input("Confirm password", type="password", key="register_confirm")
 
@@ -125,9 +125,10 @@ with tab_register:
                         #Display warning for weak password
                         st.warning("Password is too weak. Try using more varied characters.")
                     else:
-                        success, message = register_user(new_username, new_password, selected_role)
+                        success, message = register_user(new_username, new_password, user_role)
 
                         if success:
-                            st.success(f"{message} Go to the Login tab to sign in.")
+                            st.success(f"{message}")
+                            st.info("Go to the Login tab to sign in.")
                         else:
                             st.error(message or "Registration failed. Please try again.")

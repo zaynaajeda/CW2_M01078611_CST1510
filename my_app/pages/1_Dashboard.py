@@ -1,6 +1,7 @@
 import streamlit as st
 import sys
 import os
+import time
 
 #Adjust path to main project directory
 ROOT_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -30,7 +31,7 @@ if "username" not in st.session_state:
     #Initialise username
     st.session_state.username = ""
 
-#Ensure previous threats variable is initialised
+#Ensure previous threats are initialised
 if "previous_threats" not in st.session_state:
     st.session_state.previous_threats = None
 
@@ -134,17 +135,6 @@ else:
             else:
                 #Inform user that no data is available
                 st.info("No cyber incident data available.")
-
-
-        st.markdown("##### Key Metrics")
-
-        #Total incidents
-        total_incidents = len(incidents)
-
-        #Calculate change in threats
-        threat_delta = 0 if st.session_state.previous_threats is None else total_incidents - st.session_state.previous_threats
-
-        st.metric("Total Incidents", total_incidents,delta=f"{threat_delta:+d}" ,border=True)
         
         st.markdown("##### Add New Incident")
 
@@ -178,6 +168,7 @@ else:
                     
                     #Success message
                     st.success("New incident added successfully.")
+                    time.sleep(1)
                     #Rerun whole script
                     st.rerun()
 

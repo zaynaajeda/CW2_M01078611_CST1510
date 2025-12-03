@@ -89,4 +89,18 @@ else:
         #Display incidents in a table
         st.dataframe(incidents, use_container_width=True)
 
+        with st.form("new_incident"):
+            type = st.text_input("Incident Type")
+            severity = st.selectbox("Severity", ["Low", "Medium", "High", "Critical"])
+            status = st.selectbox("Status", ["Open", "In Progress", "Resolved", "Closed"])
+            date = st.date_input("Date Reported")
+            description = st.text_area("Description")
+            
+            submitted = st.form_submit_button("Add Incident")
+
+            if submitted:
+                insert_incident(date.strftime("%Y-%m-%d"), type, severity, status, description)
+                st.success("New incident added successfully.")
+                st.rerun
+
         conn.commit()

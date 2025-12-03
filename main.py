@@ -21,6 +21,7 @@ def main():
     from app.services.user_service import register_user, login_user, migrate_users_from_file
     from app.data.incidents import insert_incident, get_all_incidents
     from app.data.datasets import get_all_datasets, insert_dataset
+    from app.data.tickets import insert_ticket, get_all_tickets
     
     # 2. Migrate users
     migrate_users_from_file(conn, DB_DIR / "users.txt")
@@ -50,18 +51,35 @@ def main():
     #Test CRUD for datasets
     dataset_id = insert_dataset(
         "Employee Records",
-        5000,
         "HR Department",
+        "Personnel",
         "2024-10-20",
+        5000,
         10,
-        2.5,
-        "Personnel"
+        "2.5"
     )
     print(f"Created dataset #{dataset_id}")
 
     #Query datasets
     df_datasets = get_all_datasets()
     print(f"Total datasets: {len(df_datasets)}")
+
+    #Test CRUD for tickets
+    ticket_id = insert_ticket(
+        "High",
+        "Open",
+        "Software",
+        "Application Crash",
+        "The accounting software crashes on startup.",
+        "2024-11-10",
+        12,
+        assigned_to="Bob"
+    )
+    print(f"Created ticket #{ticket_id}")
+
+    #Query tickets
+    df_tickets = get_all_tickets()
+    print(f"Total tickets: {len(df_tickets)}")
 
     conn.close()
 if __name__ == "__main__":

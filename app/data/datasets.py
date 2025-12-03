@@ -2,7 +2,7 @@ import pandas as pd
 from app.data.db import connect_database
 
 def insert_dataset(dataset_name, category, source, last_updated,
-                   record_count, column_count, file_size_mb=None):
+                   record_count, column_count, file_size_mb="Unknown"):
     """Insert new dataset metadata."""
     #Connect to database
     conn = connect_database()

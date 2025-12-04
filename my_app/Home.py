@@ -15,6 +15,7 @@ from app.services.auth import (
     check_password_strength,
     valid_roles,
 )
+from my_app.components.sidebar import logout_section
 
 #Webpage title and icon
 st.set_page_config(page_title="Login/Register", page_icon="🔐", layout="centered")
@@ -27,6 +28,11 @@ if "logged_in" not in st.session_state:
 #Initialise username
 if "username" not in st.session_state:
     st.session_state.username = ""
+
+if st.session_state.logged_in:
+    with st.sidebar:
+        st.divider()
+        logout_section()
 
 st.title("Welcome")
 

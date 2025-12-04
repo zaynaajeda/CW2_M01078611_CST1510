@@ -21,6 +21,8 @@ from app.data.incidents import (
     get_incidents_by_status,
     get_incidents_by_severity)
 
+from my_app.components.sidebar import logout_section
+
 #Webpage title and icon
 st.set_page_config(page_title="Dashboard", page_icon="📊", layout="wide")
 
@@ -64,19 +66,7 @@ with st.sidebar:
     #Line separator
     st.divider()
 
-    if st.button("Log out"):
-        # Clear session state variables related to login
-        st.session_state.logged_in = False
-        st.session_state.username = ""
-
-        #Inform user of successful logout
-        st.info("Logged out successfully.")
-
-        # Redirect immediately to the login/register page
-        st.switch_page("Home.py")
-
-        #Stop further execution of the script
-        st.stop()
+    logout_section()
 
 #Verify if domain is selected
 if domain == "-- Select a Domain --":

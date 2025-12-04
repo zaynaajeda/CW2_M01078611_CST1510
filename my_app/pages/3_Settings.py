@@ -46,28 +46,46 @@ if st.session_state.logged_in:
         st.divider()
         logout_section()
 
-st.header("User Settings")
+st.subheader("User Settings")
 
-st.subheader("Change Password")
+st.markdown("##### Change Password")
 
+#Form to change password
 with st.form("change_password_form"):
+    #Prompt user to enter current password and new password
     current_password = st.text_input("Current Password", type="password")
     new_password = st.text_input("New Password", type="password")
     confirm_password = st.text_input("Confirm New Password", type="password")
+
+    #Button to update password
     submitted = st.form_submit_button("Update Password")
 
+#Verify if form is submitted
 if submitted:
+    #Verify is all fields were filled
     if not current_password or not new_password or not confirm_password:
+        #Warning message to inform user to enter all fields
         st.warning("Please fill in all password fields.")
+
+    #Verify if current password were entered twice correctly
     elif new_password != confirm_password:
         st.error("New passwords do not match.")
+
+    #Verify if new password matches old password
     elif new_password == current_password:
         st.warning("New password must be different from the current password.")
+
+    #Continue execution if new password is correct
     else:
+        #Validate new password
         is_valid, validation_message = validate_password(new_password)
+
+        #Error message if password is not valid
         if not is_valid:
             st.error(validation_message)
+
         else:
+            #Success message and update password
             success, message = change_password(
                 st.session_state.username, current_password, new_password
             )

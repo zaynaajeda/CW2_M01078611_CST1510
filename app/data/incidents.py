@@ -167,6 +167,34 @@ def get_incident_types_with_many_cases(conn, min_count=5):
     df = pd.read_sql_query(query, conn, params=(min_count,))
     return df
 
+def get_open_incidents(conn):
+    """
+    Retrieve all incidents that are currently open.
+    Uses: SELECT, FROM, WHERE, ORDER BY
+    """
+    query = """
+    SELECT *
+    FROM cyber_incidents
+    WHERE LOWER(status) = 'open'
+    ORDER BY date DESC
+    """
+    df = pd.read_sql_query(query, conn)
+    return df
+
+def get_high_or_critical_incidents(conn):
+    """
+    Retrieve incidents with High or Critical severity.
+    Uses: SELECT, FROM, WHERE, ORDER BY
+    """
+    query = """
+    SELECT *
+    FROM cyber_incidents
+    WHERE LOWER(severity) IN ('high', 'critical')
+    ORDER BY date DESC
+    """
+    df = pd.read_sql_query(query, conn)
+    return df
+
 # Test: Run analytical queries
 conn = connect_database()
 
@@ -189,5 +217,13 @@ print(df_high_severity)
 print("\n Incident Types with Many Cases (>5):")
 df_many_cases = get_incident_types_with_many_cases(conn, min_count=5)
 print(df_many_cases)
+
+print("\n Open Incidents:")
+df_open = get_open_incidents(conn)
+print(df_open)
+
+print("\n High or Critical Incidents:")
+df_high_critical = get_high_or_critical_incidents(conn)
+print(df_high_critical)
 
 conn.close()

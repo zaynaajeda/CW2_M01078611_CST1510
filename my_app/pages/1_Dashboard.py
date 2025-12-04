@@ -17,9 +17,8 @@ from app.data.incidents import (
     insert_incident,
     update_incident,
     delete_incident,
-    get_incidents_by_type_count,
-    get_incidents_by_status,
-    get_incidents_by_severity)
+    get_open_incidents,
+    get_high_or_critical_incidents)
 
 from my_app.components.sidebar import logout_section
 
@@ -99,70 +98,42 @@ else:
         st.divider()
 
         st.markdown("##### Overview of Incidents")
+
         #Fetch all incidents from database
         incidents = get_all_incidents()
+        total_incidents = len(incidents)
+
+        #Get maximum incident id from incidents number
+        max_incident_id = int(incidents["id"].max())
+
+        #Get minimum incident id from incidents number
+        min_incident_id = int(incidents["id"].min())
+
+        #Fetches all Open incidents from database
+        open_incidents = get_open_incidents(conn)
+        total_open_incidents = len(open_incidents)
+
+        #Fetches all high or critical incidents from database
+        high_critical_incidents = get_high_or_critical_incidents(conn)
+        total_high_critical_incidents = len(high_critical_incidents)
+
+        #Split webpage into columns
+        col1, col2, col3 = st.columns(3)
+
+        with col1:
+            #Generate metric for total incidents
+            st.metric("Total incidents", total_incidents, border=True)
+
+        with col2:
+            #Generate metric for open incidents
+            st.metric("Open Incidents", total_open_incidents, border=True)
+
+        with col3:
+            #Generate metric for high or critical incidents
+            st.metric("High/Critical incidents", total_high_critical_incidents, border=True)
 
         #Display incidents in a table
         st.dataframe(incidents, use_container_width=True)
-
-        st.markdown("#### Trends")
-
-        col1, col2 = st.columns(2)
-
-        with col1:
-            #Take number of incidents by type
-            incidents_by_type = get_incidents_by_type_count(conn)
-            
-            #Verify if function successfully returned data
-            if incidents_by_type.empty == False:
-                st.markdown("##### Incidents by Type")
-
-                #Generate bar chart for incident types
-                incident_type_data = incidents_by_type.set_index("incident_type")
-                st.bar_chart(incident_type_data, use_container_width=True)
-
-            else:
-                #Inform user that no data is available
-                st.info("No cyber incident data available.")
-
-            #Take number of incidents by status
-            incidents_by_status = get_incidents_by_status(conn)
-
-            #Verify if function successfully returned data
-            if incidents_by_status.empty == False:
-                st.markdown("##### Incidents by Status")
-
-                #Generate bar chart for incident status
-                incident_status_data = incidents_by_status.set_index("status")
-                st.bar_chart(incident_status_data, use_container_width=True)
-            
-            else:
-                #Inform user that no data is available
-                st.info("No cyber incident data available.")
-
-        with col2:
-            #Take number of incidents by severity
-            incidents_by_severity = get_incidents_by_severity(conn)
-
-            #Verify if function successfully returned data
-            if incidents_by_severity.empty == False:
-                st.markdown("##### Incidents by Severity")
-
-                #Generate pie chart for incident severity
-                fig, ax = plt.subplots(figsize=(2.2, 2.2))
-                ax.pie(
-                    incidents_by_severity["count"],
-                    labels=incidents_by_severity["severity"],
-                    autopct="%1.0f%%",
-                    startangle=90,
-                    textprops={"fontsize": 5},
-                )
-                ax.axis("equal")
-                st.pyplot(fig, use_container_width=False)
-
-            else:
-                #Inform user that no data is available
-                st.info("No cyber incident severity data available.")
 
         st.markdown("##### Add New Incident")
 
@@ -200,4 +171,27 @@ else:
                     #Rerun whole script
                     st.rerun()
 
+        st.markdown("##### Delete Incident")
+
+        #Form to delete incident
+        with st.form("delete_incident"):
+            incident_id_delete = st.number_input("Incident ID", min_value=min_incident_id, max_value=max_incident_id)
+            
+            confirm_delete = st.checkbox("Yes, delete incident")
+            submit_delete = st.form_submit_button("Delete Incident")
+
+        if submit_delete:
+            if not confirm_delete:
+                st.warning("Please confirm deletion before proceeding.")
+            else:
+                selected_id = int(incident_id_delete)
+                deleted_rows = delete_incident(selected_id)
+
+                if deleted_rows:
+                    st.success(f"Incident #{selected_id} deleted.")
+                    time.sleep(1)
+                    st.rerun()
+                else:
+                    st.error("No incident found with that ID.")
+    
     conn.commit()

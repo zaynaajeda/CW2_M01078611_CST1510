@@ -13,8 +13,8 @@ from app.services.auth import (
     validate_username,
     validate_password,
     check_password_strength,
-    valid_roles,
-)
+    valid_roles,)
+
 from my_app.components.sidebar import logout_section
 
 #Webpage title and icon

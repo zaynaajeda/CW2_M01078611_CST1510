@@ -38,7 +38,7 @@ if not st.session_state.logged_in:
     #Stop further execution of the script
     st.stop()
 
-# Dashboard content for logged-in users
+#Settings content for logged-in users
 st.title("Settings")
 st.divider()
 
@@ -51,6 +51,8 @@ if st.session_state.logged_in:
         logout_section()
 
 st.markdown("#### Profile Information")
+
+#Display login username and role
 st.write(f"**Username:** {st.session_state.username or 'Unknown'}")
 st.write(f"**Role:** {st.session_state.role or 'Unknown'}")
 

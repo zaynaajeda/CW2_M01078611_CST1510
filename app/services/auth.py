@@ -128,6 +128,80 @@ def login_user(username, password):
     except FileNotFoundError:
         return False, "No users have been registered yet."
 
+#Function to change user password
+def change_password(username, current_password, new_password):
+    """
+    Update an existing user's password after validating the current password.
+    """
+    #Verify if users.txt exists
+    try:
+        #Open users.txt to read existing user data
+        with open(USER_DATA_FILE, "r") as f:
+            #Read all lines from file
+            lines = f.readlines()
+
+    except FileNotFoundError:
+        #Return False if file does not exist
+        return False, "No users have been registered yet."
+
+    #List to store updated lines
+    updated_lines = []
+    #Flag to check if user is found
+    user_found = False
+
+    #Iterate through each line in file
+    for raw_line in lines:
+        #Remove spaces
+        line = raw_line.strip()
+
+        #Skip empty lines
+        if not line:
+            updated_lines.append(raw_line)
+            continue
+
+        #Split line into username, hashed password and role
+        parts = line.split(",", 2)
+        if len(parts) < 3:
+            updated_lines.append(raw_line)
+            continue
+
+        #Store username, hashed password and role in variables
+        user, hash_value, role = parts
+
+        #Check if username matches
+        if user != username:
+            updated_lines.append(raw_line)
+            continue
+        
+        #Return True if user is found
+        user_found = True
+
+        #Remove space in hashed password
+        hash_pass = hash_value.strip()
+
+        #Remove b prefix and ending ' from hashed password
+        if hash_pass.startswith("b'") and hash_pass.endswith("'"):
+            hash_pass = hash_pass[2:-1]
+
+        #Case when password does not match
+        if not verify_password(current_password, hash_pass):
+            return False, "Current password is incorrect."
+
+        #Change hashed password into new one
+        new_hash = hash_password(new_password).decode("utf-8")
+        updated_lines.append(f"{username},{new_hash},{role.strip()}\n")
+
+    #Case for user not found
+    if not user_found:
+        return False, f"Username '{username}' not found."
+
+    #Update users.txt
+    with open(USER_DATA_FILE, "w") as f:
+        f.writelines(updated_lines)
+
+    #Return success message
+    return True, "Password updated successfully."
+
 #Username validation function
 def validate_username(username):
     #Check length of username

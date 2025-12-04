@@ -1,12 +1,13 @@
 import streamlit as st
 import sys
 import os
-from my_app.components.sidebar import logout_section
-
 
 #Adjust path to main project directory
 ROOT_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 sys.path.append(ROOT_DIR)
+
+from app.services.auth import validate_password, change_password
+from my_app.components.sidebar import logout_section
 
 #Webpage title and icon
 st.set_page_config(page_title="Settings", page_icon="⚙️", layout="wide")
@@ -22,7 +23,7 @@ if "username" not in st.session_state:
 
 # Check if user is logged in
 if not st.session_state.logged_in:
-    st.error("You must be logged in to view the dashboard.")
+    st.error("You must be logged in to view the settings page.")
 
     #Button to go back to login/register page
     if st.button("Go to Login/Register page"):
@@ -33,6 +34,10 @@ if not st.session_state.logged_in:
     #Stop further execution of the script
     st.stop()
 
+# Dashboard content for logged-in users
+st.title("Settings")
+st.divider()
+
 #Verify if user is logged in
 if st.session_state.logged_in:
     #Generate sidebar
@@ -40,3 +45,33 @@ if st.session_state.logged_in:
         #Add a divider and logout section
         st.divider()
         logout_section()
+
+st.header("User Settings")
+
+st.subheader("Change Password")
+
+with st.form("change_password_form"):
+    current_password = st.text_input("Current Password", type="password")
+    new_password = st.text_input("New Password", type="password")
+    confirm_password = st.text_input("Confirm New Password", type="password")
+    submitted = st.form_submit_button("Update Password")
+
+if submitted:
+    if not current_password or not new_password or not confirm_password:
+        st.warning("Please fill in all password fields.")
+    elif new_password != confirm_password:
+        st.error("New passwords do not match.")
+    elif new_password == current_password:
+        st.warning("New password must be different from the current password.")
+    else:
+        is_valid, validation_message = validate_password(new_password)
+        if not is_valid:
+            st.error(validation_message)
+        else:
+            success, message = change_password(
+                st.session_state.username, current_password, new_password
+            )
+            if success:
+                st.success(message)
+            else:
+                st.error(message)

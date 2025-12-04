@@ -203,5 +203,39 @@ else:
                 else:
                     #Error message
                     st.error("No incident found with that ID.")
-    
+
+        st.markdown("##### Update Incident")
+
+        #Form to update incident
+        with st.form("update_incident"):
+            #Prompt user to select incident ID
+            incident_id_update = st.number_input("Incident ID", min_value=min_incident_id, max_value=max_incident_id)
+            
+            #Prompt user to select new status of incident
+            new_incident_status = st.selectbox("New Status", ["-- Select New Status --", "Open", "In Progress", "Resolved", "Closed"], key="update_status")
+            #Button to submit form
+            submit_update = st.form_submit_button("Update Incident")
+
+        #Verify if form is submitted
+        if submit_update:
+            #Verify if new status is selected
+            if new_incident_status == "-- Select New Status --":
+                #Warning message
+                st.warning("Please select new status of incident.")
+                #Stop whole execution of script
+                st.stop()
+
+            #Proceed with updating incident status
+            if update_incident(conn, int(incident_id_update), new_incident_status):
+                #Success message
+                st.success(f"Incident #{incident_id_update} updated to {new_incident_status}.")
+
+                #Pause program for 1s
+                time.sleep(1)
+                #Rerun whole script
+                st.rerun()
+            else:
+                #Error message
+                st.error("No incident found with that ID.")
+                       
     conn.commit()

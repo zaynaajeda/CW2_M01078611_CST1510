@@ -75,7 +75,7 @@ with st.sidebar:
 
     #Line separator
     st.divider()
-
+    #Implement logout
     logout_section()
 
 #Verify if domain is selected
@@ -167,6 +167,7 @@ else:
                     
                     #Success message
                     st.success("New incident added successfully.")
+                    #Pause program for 1s
                     time.sleep(1)
                     #Rerun whole script
                     st.rerun()
@@ -175,23 +176,32 @@ else:
 
         #Form to delete incident
         with st.form("delete_incident"):
+            #Prompt user to select incident ID
             incident_id_delete = st.number_input("Incident ID", min_value=min_incident_id, max_value=max_incident_id)
             
+            #Checkbox to confirm deletion of incident
             confirm_delete = st.checkbox("Yes, delete incident")
+            #Button for form
             submit_delete = st.form_submit_button("Delete Incident")
 
+        #verify if form is submitted
         if submit_delete:
+            #Verify if checkbox is ticked
             if not confirm_delete:
+                #Inform user to tick checkbox
                 st.warning("Please confirm deletion before proceeding.")
             else:
-                selected_id = int(incident_id_delete)
-                deleted_rows = delete_incident(selected_id)
+                #Proceed with deletion of incident
+                if delete_incident(int(incident_id_delete)):
+                    #Inform user that incident was deleted
+                    st.success(f"Incident #{incident_id_delete} deleted.")
 
-                if deleted_rows:
-                    st.success(f"Incident #{selected_id} deleted.")
+                    #Pause program for 1s
                     time.sleep(1)
+                    #Rerun whole script
                     st.rerun()
                 else:
+                    #Error message
                     st.error("No incident found with that ID.")
     
     conn.commit()

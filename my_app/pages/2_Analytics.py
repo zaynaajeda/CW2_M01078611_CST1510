@@ -60,4 +60,5 @@ if st.session_state.logged_in:
     with st.sidebar:
         #Add a divider and logout section
         st.divider()
+        #Implement logout
         logout_section()

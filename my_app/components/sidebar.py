@@ -1,15 +1,16 @@
 import streamlit as st
 
-
 def logout_section(redirect_page="Home.py"):
     """
-    Render a reusable logout button inside the sidebar. The button clears the
-    login-related session state and redirects the user back to the login page.
+    Implement a logout button inside sidebar which 
+    clears all session states and redirect user to login page
     """
     if not st.session_state.get("logged_in"):
         return
 
+    #Verify if button is clicked
     if st.button("Log out"):
+        #Reset session state variables
         st.session_state.logged_in = False
         st.session_state.username = ""
         st.session_state.role = ""

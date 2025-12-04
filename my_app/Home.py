@@ -29,8 +29,11 @@ if "logged_in" not in st.session_state:
 if "username" not in st.session_state:
     st.session_state.username = ""
 
+#Verify if user is logged in
 if st.session_state.logged_in:
+    #Generate sidebar
     with st.sidebar:
+        #Add a divider and logout section
         st.divider()
         logout_section()
 

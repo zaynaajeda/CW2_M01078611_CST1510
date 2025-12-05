@@ -105,7 +105,7 @@ def delete_dataset(dataset_id):
     #Return number of deleted rows
     return row_count
 
-def get_datasets_by_category_count(conn):
+def get_datasets_by_category(conn):
     """
     Count datasets by category.
     Uses: SELECT, FROM, GROUP BY, ORDER BY
@@ -120,6 +120,20 @@ def get_datasets_by_category_count(conn):
     #Create dataframe
     df = pd.read_sql_query(query, conn)
     #Return dataframe
+    return df
+
+def get_datasets_by_source(conn):
+    """
+    Count datasets by source.
+    Uses: SELECT, FROM, GROUP BY, ORDER BY
+    """
+    query = """
+    SELECT source, COUNT(*) as count
+    FROM datasets_metadata
+    GROUP BY source
+    ORDER BY count DESC
+    """
+    df = pd.read_sql_query(query, conn)
     return df
 
 def get_large_datasets_by_source(conn):
@@ -161,8 +175,12 @@ def get_large_columns_datasets(conn):
 conn = connect_database()
 
 print("\n Datasets by Category:")
-df_by_category = get_datasets_by_category_count(conn)
+df_by_category = get_datasets_by_category(conn)
 print(df_by_category)
+
+print("\n Datasets by Source:")
+df_by_source = get_datasets_by_source(conn)
+print(df_by_source)
 
 print("\n Large Datasets by Source (>=10000 records):")
 df_large = get_large_datasets_by_source(conn)

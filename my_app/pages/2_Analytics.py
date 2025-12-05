@@ -19,6 +19,11 @@ from app.data.incidents import (
     get_incidents_by_type_count,
     get_incidents_over_time)
 
+#Import dataset management functions
+from app.data.datasets import (
+    get_datasets_by_category,
+    get_datasets_by_source)
+
 #Connect to the shared intelligence platform database
 conn = connect_database()
 
@@ -95,7 +100,7 @@ if domain == "Cyber Security":
     col1, col2 = st.columns(2)
 
     with col1:
-        #Take number of incidents by type
+        #Take incidents by type
         incidents_by_type = get_incidents_by_type_count(conn)
             
         #Verify if function successfully returned data
@@ -109,7 +114,7 @@ if domain == "Cyber Security":
             #Inform user that no data is available
             st.info("No cyber incident data available.")
 
-        #Take number of incidents by status
+        #Take incidents by status
         incidents_by_status = get_incidents_by_status(conn)
 
         #Verify if function successfully returned data
@@ -124,7 +129,7 @@ if domain == "Cyber Security":
             st.info("No cyber incident data available.")
 
     with col2:
-        #Take number of incidents by severity
+        #Take incidents by severity
         incidents_by_severity = get_incidents_by_severity(conn)
 
         #Verify if function successfully returned data
@@ -132,7 +137,7 @@ if domain == "Cyber Security":
             st.markdown("##### Incidents by Severity")
 
             #Generate pie chart for incident severity
-            fig, ax = plt.subplots(figsize=(2.2, 2.2))
+            fig, ax = plt.subplots(figsize = (2.2, 2.2))
             ax.pie(incidents_by_severity["count"],
                     labels = incidents_by_severity["severity"],
                     autopct = "%1.0f%%",
@@ -144,3 +149,46 @@ if domain == "Cyber Security":
         else:
             #Inform user that no data is available
             st.info("No cyber incident severity data available.")
+
+if domain == "Data Science":
+    #Take datasets by category 
+    datasets_by_category = get_datasets_by_category(conn)
+
+    #Verify if function successfully returned data
+    if datasets_by_category.empty == False:
+        st.markdown("##### Datasets by Category")
+
+        #Generate bar chart for dataset categories
+        st.bar_chart(datasets_by_category, x = "category", y = "count")
+    else:
+        #Inform user that no data is available
+        st.info("No datasets available.")
+
+    #Take datasets by source
+    datasets_by_source = get_datasets_by_source(conn)
+
+    #Verify if function successfully returned data
+    if datasets_by_source.empty == False:
+        st.markdown("##### Datasets by Source")
+
+        #Generate bar chart for dataset sources
+        st.bar_chart(datasets_by_source, x = "source", y = "count")
+    else:
+        #Inform user that no data is available
+        st.info("No dataset source information available.")
+
+    #Verify if function successfully returned data
+    if datasets_by_source.empty == False:
+        st.markdown("##### Datasets by Source")
+
+        #Generate pie chart for dataset categories
+        fig, ax = plt.subplots(figsize = (2.2, 2.2))
+        ax.pie(datasets_by_source["count"],
+                labels = datasets_by_source["source"],
+                autopct = "%1.0f%%",
+                startangle = 90,
+                textprops = {"fontsize": 5})
+        ax.axis("equal")
+        st.pyplot(fig, use_container_width = False)        
+
+

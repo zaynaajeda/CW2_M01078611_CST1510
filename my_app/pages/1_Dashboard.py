@@ -19,6 +19,7 @@ from app.data.incidents import (
     get_open_incidents,
     get_high_or_critical_incidents)
 
+#Import datasets management functions
 from app.data.datasets import (
     get_all_datasets,
     insert_dataset,
@@ -26,6 +27,13 @@ from app.data.datasets import (
     delete_dataset,
     get_large_datasets_by_source,
     get_large_columns_datasets)
+
+#Import tickets management functions
+from app.data.tickets import (
+    get_all_tickets,
+    insert_ticket,
+    delete_ticket,
+    update_ticket)
 
 from my_app.components.sidebar import logout_section
 
@@ -394,4 +402,33 @@ else:
             else:
                 #Error message
                 st.error("No dataset found with that ID.")
+
+    #Verify if domain is IT Operations
+    if domain == "IT Operations":
+        st.subheader("IT Operations")
+
+        st.divider()
+
+        st.markdown("##### Overview of Tickets")
+
+        #Fetch all tickets from database
+        tickets = get_all_tickets()
+        total_tickets = len(tickets)
+
+        #Get maximum ticket id from tickets table
+        max_ticket_id = int(tickets["id"].max())
+
+        #Get minimum ticket id from tickets table
+        min_ticket_id = int(tickets["id"].min())
+
+        #Split page into columns
+        col1, col2, col3 = st.columns(3)
+
+        with col1:
+            st.metric("Total Tickets", total_tickets, border = True)
+
+        #Display tickets in a table
+        st.dataframe(tickets, use_container_width = True)        
+
+
     conn.commit()

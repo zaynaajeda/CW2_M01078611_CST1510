@@ -1,4 +1,5 @@
 import pandas as pd
+from datetime import datetime
 from app.data.db import connect_database
 
 def insert_dataset(dataset_name, category, source, last_updated,
@@ -49,17 +50,23 @@ def get_all_datasets():
     return df
 
 def update_dataset_record(conn, dataset_id, new_record_count):
-    """Update record count of a dataset."""
+    """Update record count of a dataset and refresh the last_updated date."""
     #Connect to database
     conn = connect_database()
 
     #Create cursor
     cursor = conn.cursor()
 
+    #Generate today's date
+    current_date = datetime.now().strftime("%Y-%m-%d")
+
     #Execute update statement
     cursor.execute("""
-        UPDATE datasets_metadata SET record_count = ? WHERE id = ?
-        """, (new_record_count, dataset_id))
+        UPDATE datasets_metadata
+        SET record_count = ?, last_updated = ?
+        WHERE id = ?
+        """, 
+        (new_record_count, current_date, dataset_id))
 
     #Save changes
     conn.commit()

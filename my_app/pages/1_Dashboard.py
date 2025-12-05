@@ -203,7 +203,7 @@ else:
                 #Proceed with deletion of incident
                 if delete_incident(int(incident_id_delete)):
                     #Inform user that incident was deleted
-                    st.success(f"Incident of ID{incident_id_delete} deleted.")
+                    st.success(f"Incident of ID {incident_id_delete} deleted.")
 
                     #Pause program for 1s
                     time.sleep(1)
@@ -237,7 +237,7 @@ else:
             #Proceed with updating incident status
             if update_incident(conn, int(incident_id_update), new_incident_status):
                 #Success message
-                st.success(f"Incident of ID{incident_id_update} updated to {new_incident_status}.")
+                st.success(f"Incident of ID {incident_id_update} updated to {new_incident_status}.")
 
                 #Pause program for 1s
                 time.sleep(1)
@@ -357,7 +357,7 @@ else:
                 #Proceed with deletion of dataset
                 if delete_dataset(int(dataset_id_delete)):
                     #Success message
-                    st.success(f"Dataset of ID{dataset_id_delete} deleted.")
+                    st.success(f"Dataset of ID {dataset_id_delete} deleted.")
 
                     #Pause program for 1s
                     time.sleep(1)
@@ -368,4 +368,30 @@ else:
                     st.error("No dataset found with that ID")
 
 
+        st.markdown("##### Update Dataset")
+
+        #Form to update incident
+        with st.form("update_dataset"):
+            #Prompt user to select dataset ID
+            dataset_id_update = st.number_input("Dataset ID", min_value = min_dataset_id, max_value = max_dataset_id)
+            
+            #Prompt user to select new record count of dataset
+            new_record_count = st.number_input("New Record Count", min_value = 1000, step = 1000)
+            
+            #Button to submit form
+            submit_dataset_update = st.form_submit_button("Update Dataset")
+
+        #verify if form is submitted
+        if submit_dataset_update:
+            #Proceeds with updating record of dataset
+            if update_dataset_record(conn, int(dataset_id_update), int(new_record_count)):
+                #Success message
+                st.success(f"Dataset of ID {dataset_id_update} updated to {new_record_count} records.")
+                #Pause program for 1s
+                time.sleep(1)
+                #Rerun whole script
+                st.rerun()
+            else:
+                #Error message
+                st.error("No dataset found with that ID.")
     conn.commit()

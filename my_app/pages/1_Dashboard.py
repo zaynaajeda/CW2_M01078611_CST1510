@@ -110,10 +110,10 @@ else:
         incidents = get_all_incidents()
         total_incidents = len(incidents)
 
-        #Get maximum incident id from incidents number
+        #Get maximum incident id from incident table
         max_incident_id = int(incidents["id"].max())
 
-        #Get minimum incident id from incidents number
+        #Get minimum incident id from incident table
         min_incident_id = int(incidents["id"].min())
 
         #Fetches all Open incidents from database
@@ -142,6 +142,8 @@ else:
         #Display incidents in a table
         st.dataframe(incidents, use_container_width = True)
 
+        st.divider()
+        st.markdown("#### Incidents Management")
         st.markdown("##### Add New Incident")
 
         #Form to add new incident
@@ -184,24 +186,24 @@ else:
         #Form to delete incident
         with st.form("delete_incident"):
             #Prompt user to select incident ID
-            incident_id_delete = st.number_input("Incident ID", min_value=min_incident_id, max_value=max_incident_id)
+            incident_id_delete = st.number_input("Incident ID", min_value = min_incident_id, max_value = max_incident_id)
             
             #Checkbox to confirm deletion of incident
-            confirm_delete = st.checkbox("Yes, delete incident")
+            confirm_delete_incident = st.checkbox("Yes, delete incident")
             #Button for form
-            submit_delete = st.form_submit_button("Delete Incident")
+            submit_delete_incident = st.form_submit_button("Delete Incident")
 
         #verify if form is submitted
-        if submit_delete:
+        if submit_delete_incident:
             #Verify if checkbox is ticked
-            if not confirm_delete:
+            if not confirm_delete_incident:
                 #Inform user to tick checkbox
                 st.warning("Please confirm deletion before proceeding.")
             else:
                 #Proceed with deletion of incident
                 if delete_incident(int(incident_id_delete)):
                     #Inform user that incident was deleted
-                    st.success(f"Incident #{incident_id_delete} deleted.")
+                    st.success(f"Incident of ID{incident_id_delete} deleted.")
 
                     #Pause program for 1s
                     time.sleep(1)
@@ -216,7 +218,7 @@ else:
         #Form to update incident
         with st.form("update_incident"):
             #Prompt user to select incident ID
-            incident_id_update = st.number_input("Incident ID", min_value=min_incident_id, max_value=max_incident_id)
+            incident_id_update = st.number_input("Incident ID", min_value = min_incident_id, max_value = max_incident_id)
             
             #Prompt user to select new status of incident
             new_incident_status = st.selectbox("New Status", ["-- Select New Status --", "Open", "In Progress", "Resolved", "Closed"], key="update_status")
@@ -235,7 +237,7 @@ else:
             #Proceed with updating incident status
             if update_incident(conn, int(incident_id_update), new_incident_status):
                 #Success message
-                st.success(f"Incident #{incident_id_update} updated to {new_incident_status}.")
+                st.success(f"Incident of ID{incident_id_update} updated to {new_incident_status}.")
 
                 #Pause program for 1s
                 time.sleep(1)
@@ -257,9 +259,17 @@ else:
         datasets = get_all_datasets()
         total_datasets = len(datasets)
 
+        #Get min dataset id from datasets table
+        min_dataset_id = int(datasets["id"].min())
+
+        #Get max dataset id from datasets table
+        max_dataset_id = int(datasets["id"].max())
+
+        #Fetches all datasets with >10000 record counts
         large_datasets = get_large_datasets_by_source(conn)
         total_large_datasets = len(large_datasets)
 
+        #Fetches all datasets with >10 column counts
         large_col_datasets = get_large_columns_datasets(conn)
         total_large_col_datasets = len(large_col_datasets)
 
@@ -271,13 +281,81 @@ else:
             st.metric("Total Datasets", total_datasets, border = True)
 
         with col2:
+            #Generate metric for total datasets with >10000 records
             st.metric("More than 10,000 records", total_large_datasets, border = True)           
 
         with col3:
+            #Generate metric for total datasets with >10 columns
             st.metric("More than 10 columns", total_large_col_datasets, border = True)
 
         #Display datasets in a table
         st.dataframe(datasets, use_container_width = True)
+
+        st.divider()
+        st.markdown("#### Datasets Management")
+
+        st.markdown("##### Add New Dataset")
+
+        #Form to add new dataset
+        with st.form("new_dataset"):
+            #Prompt user to enter dataset details
+            dataset_name = st.text_input("Dataset Name")
+            category = st.text_input("Category")
+            source = st.text_input("Source")
+            last_updated = st.date_input("Last Updated")
+            record_count = st.number_input("Record Count", min_value = 1000, step = 1000)
+            column_count = st.number_input("Column Count", min_value = 1, step = 1)
+            file_size = st.number_input("File Size (MB)", min_value = 0.1, step = 0.1)
+
+            #Submit button for the form
+            dataset_submit = st.form_submit_button("Add Dataset")
+
+        #Verify if form is submitted
+        if dataset_submit:
+            #Verify if all fields are filled
+            if not dataset_name or not category or not source or not last_updated:
+                #Inform user to fill all fields
+                st.warning("Please fill in all fields.")
+            else:
+                #Insert new dataset into database
+                insert_dataset(
+                        dataset_name,
+                        category,
+                        source,
+                        last_updated.strftime("%Y-%m-%d"),
+                        int(record_count),
+                        int(column_count),
+                        file_size)
+                
+                #Success message
+                st.success("New dataset added successfully.")
+
+                #Pause program for 1s
+                time.sleep(1)
+                #Rerun whole script
+                st.rerun()
         
+        st.markdown("##### Delete Dataset")
+
+        #Form to delete dataset
+        with st.form("delete_dataset"):
+            dataset_id_delete = st.number_input("Dataset ID", min_value = min_dataset_id, max_value = max_dataset_id)
+
+            confirm_delete_dataset = st.checkbox("Yes, delete dataset.")
+
+            submit_delete_dataset = st.form_submit_button("Delete Dataset")
+
+        if submit_delete_dataset:
+            if not confirm_delete_dataset:
+                st.warning("Please confirm deletion before proceeding.")
+            else:
+                if delete_dataset(int(dataset_id_delete)):
+                    st.success(f"Dataset of ID{dataset_id_delete} deleted.")
+
+                    time.sleep(1)
+                    st.rerun()
+                else:
+                    st.error("No dataset found with that ID")
+
 
     conn.commit()

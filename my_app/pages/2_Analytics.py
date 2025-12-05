@@ -99,6 +99,8 @@ if domain == "Cyber Security":
         #Inform user that no data is available to plot
         st.info("No time-series data of incidents available.")
 
+    st.divider()
+
     #Divide page into columns
     col1, col2 = st.columns(2)
 
@@ -154,40 +156,6 @@ if domain == "Cyber Security":
             st.info("No cyber incident severity data available.")
 
 if domain == "Data Science":
-    #Take datasets by category 
-    datasets_by_category = get_datasets_by_category(conn)
-
-    #Verify if function successfully returned data
-    if datasets_by_category.empty == False:
-        st.markdown("##### Datasets by Category")
-
-        #Generate pie chart for dataset categories
-        fig, ax = plt.subplots(figsize = (2.2, 2.2))
-        ax.pie(datasets_by_category["count"],
-                labels = datasets_by_category["category"],
-                autopct = "%1.0f%%",
-                startangle = 90,
-                textprops = {"fontsize": 5})        
-        ax.axis("equal")
-        st.pyplot(fig, use_container_width = False)
-
-    #Take datasets by source
-    datasets_by_source = get_datasets_by_source(conn)
-
-    #Verify if function successfully returned data
-    if datasets_by_source.empty == False:
-        st.markdown("##### Datasets by Source")
-
-        #Generate pie chart for dataset categories
-        fig, ax = plt.subplots(figsize = (2.2, 2.2))
-        ax.pie(datasets_by_source["count"],
-                labels = datasets_by_source["source"],
-                autopct = "%1.0f%%",
-                startangle = 90,
-                textprops = {"fontsize": 5})
-        ax.axis("equal")
-        st.pyplot(fig, use_container_width = False)        
-
     #Take number of datasets per day
     datasets_over_time = get_datasets_over_time(conn)
 
@@ -201,26 +169,71 @@ if domain == "Data Science":
         #Inform user that no data is available to plot
         st.info("No time-series data of datasets available.")
 
-    #Display record counts per dataset
-    dataset_record_counts = get_dataset_record_counts(conn)
+    st.divider()
 
-    if dataset_record_counts.empty == False:
-        st.markdown("##### Record Count per Dataset")
+    #Divide page into columns
+    col1, col2 = st.columns(2)
 
-        #Generate bar chart for dataset record sizes
-        st.bar_chart(dataset_record_counts, x = "dataset_name", y = "record_count")
-    else:
-        #Inform user that no dataset-level metrics are available
-        st.info("No dataset record count information available.")
+    with col1:
+        #Display record counts per dataset
+        dataset_record_counts = get_dataset_record_counts(conn)
 
-    #Display column counts per dataset
-    dataset_column_counts = get_dataset_column_counts(conn)
+        if dataset_record_counts.empty == False:
+            st.markdown("##### Record Count per Dataset")
 
-    if dataset_column_counts.empty == False:
-        st.markdown("##### Column Count per Dataset")
+            #Generate bar chart for dataset record sizes
+            st.bar_chart(dataset_record_counts, x = "dataset_name", y = "record_count", use_container_width = True)
+        else:
+            #Inform user that no dataset-level metrics are available
+            st.info("No dataset record count information available.")       
+        
+        st.divider()
 
-        #Generate bar chart for dataset column sizes
-        st.bar_chart(dataset_column_counts, x = "dataset_name", y = "column_count")
-    else:
-        #Inform user that no dataset-level metrics are available
-        st.info("No dataset column count information available.")
+        #Take datasets by category 
+        datasets_by_category = get_datasets_by_category(conn)
+
+        #Verify if function successfully returned data
+        if datasets_by_category.empty == False:
+            st.markdown("##### Datasets by Category")
+
+            #Generate pie chart for dataset categories
+            fig, ax = plt.subplots(figsize = (2.2, 2.2))
+            ax.pie(datasets_by_category["count"],
+                    labels = datasets_by_category["category"],
+                    autopct = "%1.0f%%",
+                    startangle = 90,
+                    textprops = {"fontsize": 5})        
+            ax.axis("equal")
+            st.pyplot(fig, use_container_width = False) 
+
+    with col2:
+        #Display column counts per dataset
+        dataset_column_counts = get_dataset_column_counts(conn)
+
+        if dataset_column_counts.empty == False:
+            st.markdown("##### Column Count per Dataset")
+
+            #Generate bar chart for dataset column sizes
+            st.bar_chart(dataset_column_counts, x = "dataset_name", y = "column_count", use_container_width = True)
+        else:
+            #Inform user that no dataset-level metrics are available
+            st.info("No dataset column count information available.")       
+
+        st.divider()
+
+        #Take datasets by source
+        datasets_by_source = get_datasets_by_source(conn)
+
+        #Verify if function successfully returned data
+        if datasets_by_source.empty == False:
+            st.markdown("##### Datasets by Source")
+
+            #Generate pie chart for dataset categories
+            fig, ax = plt.subplots(figsize = (2.2, 2.2))
+            ax.pie(datasets_by_source["count"],
+                    labels = datasets_by_source["source"],
+                    autopct = "%1.0f%%",
+                    startangle = 90,
+                    textprops = {"fontsize": 5})
+            ax.axis("equal")
+            st.pyplot(fig, use_container_width = False)      

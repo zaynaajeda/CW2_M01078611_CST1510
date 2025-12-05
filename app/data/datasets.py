@@ -103,13 +103,16 @@ def get_datasets_by_category_count(conn):
     Count datasets by category.
     Uses: SELECT, FROM, GROUP BY, ORDER BY
     """
+    #Execute select statement
     query = """
     SELECT category, COUNT(*) as count
     FROM datasets_metadata
     GROUP BY category
     ORDER BY count DESC
     """
+    #Create dataframe
     df = pd.read_sql_query(query, conn)
+    #Return dataframe
     return df
 
 def get_large_datasets_by_source(conn):
@@ -117,6 +120,7 @@ def get_large_datasets_by_source(conn):
     Count large datasets by source.
     Uses: SELECT, FROM, WHERE, GROUP BY, ORDER BY
     """
+    #Execute select statement
     query = """
     SELECT source, COUNT(*) as count
     FROM datasets_metadata
@@ -124,7 +128,26 @@ def get_large_datasets_by_source(conn):
     GROUP BY source
     ORDER BY count DESC
     """
+    #Create dataframe
     df = pd.read_sql_query(query, conn)
+    #Return dataframe
+    return df
+
+def get_large_columns_datasets(conn):
+    """
+    Count datasets where column count is greater than 10.
+    Uses: SELECT, FROM, WHERE, ORDER BY
+    """
+    #Execute select statement
+    query = """
+    SELECT dataset_name, column_count
+    FROM datasets_metadata
+    WHERE column_count > 10
+    ORDER BY column_count DESC
+    """
+    #Create dataframe
+    df = pd.read_sql_query(query, conn)
+    #Return dataframe
     return df
 
 # Test: Run analytical queries
@@ -137,5 +160,9 @@ print(df_by_category)
 print("\n Large Datasets by Source (>=10000 records):")
 df_large = get_large_datasets_by_source(conn)
 print(df_large)
+
+print("\n Datasets with >10 Columns:")
+df_many_columns = get_large_columns_datasets(conn)
+print(df_many_columns)
 
 conn.close()

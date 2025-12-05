@@ -24,7 +24,8 @@ from app.data.datasets import (
     insert_dataset,
     update_dataset,
     delete_dataset,
-    get_large_datasets_by_source)
+    get_large_datasets_by_source,
+    get_large_columns_datasets)
 
 from my_app.components.sidebar import logout_section
 
@@ -128,18 +129,18 @@ else:
 
         with col1:
             #Generate metric for total incidents
-            st.metric("Total incidents", total_incidents, border=True)
+            st.metric("Total incidents", total_incidents, border = True)
 
         with col2:
             #Generate metric for open incidents
-            st.metric("Open Incidents", total_open_incidents, border=True)
+            st.metric("Open Incidents", total_open_incidents, border = True)
 
         with col3:
             #Generate metric for high or critical incidents
-            st.metric("High/Critical incidents", total_high_critical_incidents, border=True)
+            st.metric("High/Critical incidents", total_high_critical_incidents, border = True)
 
         #Display incidents in a table
-        st.dataframe(incidents, use_container_width=True)
+        st.dataframe(incidents, use_container_width = True)
 
         st.markdown("##### Add New Incident")
 
@@ -259,18 +260,24 @@ else:
         large_datasets = get_large_datasets_by_source(conn)
         total_large_datasets = len(large_datasets)
 
+        large_col_datasets = get_large_columns_datasets(conn)
+        total_large_col_datasets = len(large_col_datasets)
+
         #Split webpage into columns
         col1, col2, col3 = st.columns(3)
 
         with col1:
             #Generate metric for total datasets
-            st.metric("Total datasets", total_datasets, border = True)
+            st.metric("Total Datasets", total_datasets, border = True)
 
         with col2:
-            st.metric("Larger than 10,000 records", total_large_datasets, border = True)
+            st.metric("More than 10,000 records", total_large_datasets, border = True)           
+
+        with col3:
+            st.metric("More than 10 columns", total_large_col_datasets, border = True)
 
         #Display datasets in a table
-        st.dataframe(datasets, use_container_width=True)
+        st.dataframe(datasets, use_container_width = True)
         
 
     conn.commit()

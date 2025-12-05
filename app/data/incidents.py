@@ -100,13 +100,16 @@ def get_incidents_by_type_count(conn):
     Count incidents by type.
     Uses: SELECT, FROM, GROUP BY, ORDER BY
     """
+    #Select only incident types and regroup by it
     query = """
     SELECT incident_type, COUNT(*) as count
     FROM cyber_incidents
     GROUP BY incident_type
     ORDER BY count DESC
     """
+    #Create dataframe
     df = pd.read_sql_query(query, conn)
+    #Return dataframe
     return df
 
 def get_incidents_over_time(conn):
@@ -117,7 +120,9 @@ def get_incidents_over_time(conn):
     GROUP BY date
     ORDER BY date ASC
     """
+    #Create dataframe
     df = pd.read_sql_query(query, conn)
+    #Return dataframe
     return df
 
 def get_incidents_by_status(conn):
@@ -131,7 +136,9 @@ def get_incidents_by_status(conn):
     GROUP BY status
     ORDER BY count DESC
     """
+    #Create dataframe
     df = pd.read_sql_query(query, conn)
+    #Return dataframe
     return df
 
 def get_incidents_by_severity(conn):
@@ -145,7 +152,9 @@ def get_incidents_by_severity(conn):
     GROUP BY severity
     ORDER BY count DESC
     """
+    #Create dataframe
     df = pd.read_sql_query(query, conn)
+    #Return dataframe
     return df
 
 def get_high_severity_by_status(conn):
@@ -160,7 +169,9 @@ def get_high_severity_by_status(conn):
     GROUP BY status
     ORDER BY count DESC
     """
+    #Create dataframe
     df = pd.read_sql_query(query, conn)
+    #Return dataframe
     return df
 
 def get_incident_types_with_many_cases(conn, min_count=5):
@@ -175,7 +186,9 @@ def get_incident_types_with_many_cases(conn, min_count=5):
     HAVING COUNT(*) > ?
     ORDER BY count DESC
     """
+    #Create dataframe
     df = pd.read_sql_query(query, conn, params=(min_count,))
+    #Return dataframe
     return df
 
 def get_open_incidents(conn):
@@ -189,7 +202,9 @@ def get_open_incidents(conn):
     WHERE LOWER(status) = 'open'
     ORDER BY date DESC
     """
+    #Create dataframe
     df = pd.read_sql_query(query, conn)
+    #Return dataframe
     return df
 
 def get_high_or_critical_incidents(conn):
@@ -203,7 +218,9 @@ def get_high_or_critical_incidents(conn):
     WHERE LOWER(severity) IN ('high', 'critical')
     ORDER BY date DESC
     """
+    #Create dataframe
     df = pd.read_sql_query(query, conn)
+    #Return dataframe
     return df
 
 # Test: Run analytical queries

@@ -48,7 +48,7 @@ def get_all_datasets():
     #Return DataFrame
     return df
 
-def update_dataset(conn, dataset_id, new_record_count):
+def update_dataset_record(conn, dataset_id, new_record_count):
     """Update record count of a dataset."""
     #Connect to database
     conn = connect_database()

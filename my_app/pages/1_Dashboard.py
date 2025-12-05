@@ -22,7 +22,7 @@ from app.data.incidents import (
 from app.data.datasets import (
     get_all_datasets,
     insert_dataset,
-    update_dataset,
+    update_dataset_record,
     delete_dataset,
     get_large_datasets_by_source,
     get_large_columns_datasets)
@@ -339,22 +339,32 @@ else:
 
         #Form to delete dataset
         with st.form("delete_dataset"):
+            #Prompt user to select dataset ID
             dataset_id_delete = st.number_input("Dataset ID", min_value = min_dataset_id, max_value = max_dataset_id)
 
+            #Checkbox to confirm deletion of dataset
             confirm_delete_dataset = st.checkbox("Yes, delete dataset.")
-
+            #Button for form
             submit_delete_dataset = st.form_submit_button("Delete Dataset")
 
+        #Verify if form is submitted
         if submit_delete_dataset:
+            #Verify if checkbox is ticked
             if not confirm_delete_dataset:
+                #Inform user to tick checkbox
                 st.warning("Please confirm deletion before proceeding.")
             else:
+                #Proceed with deletion of dataset
                 if delete_dataset(int(dataset_id_delete)):
+                    #Success message
                     st.success(f"Dataset of ID{dataset_id_delete} deleted.")
 
+                    #Pause program for 1s
                     time.sleep(1)
+                    #Rerun whole script
                     st.rerun()
                 else:
+                    #Error message
                     st.error("No dataset found with that ID")
 
 

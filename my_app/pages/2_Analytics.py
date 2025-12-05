@@ -78,7 +78,20 @@ if st.session_state.logged_in:
         logout_section()
 
 if domain == "Cyber Security":
+    #Take number of incidents per day
     incidents_over_time = get_incidents_over_time(conn)
+
+    #Display time-series for cyberincidents
+    if incidents_over_time.empty == False:
+        st.markdown("##### Incidents over Time")
+
+        #Create line chart for number of incidents over time
+        st.line_chart(incidents_over_time, x = "date", y = "count")
+    else:
+        #Inform user that no data is available to plot
+        st.info("No time-series data of incidents available.")
+
+    #Divide page into columns
     col1, col2 = st.columns(2)
 
     with col1:
@@ -90,8 +103,7 @@ if domain == "Cyber Security":
             st.markdown("##### Incidents by Type")
 
             #Generate bar chart for incident types
-            incident_type_data = incidents_by_type.set_index("incident_type")
-            st.bar_chart(incident_type_data, use_container_width=True)
+            st.bar_chart(incidents_by_type, x = "incident_type", y = "count")
 
         else:
             #Inform user that no data is available
@@ -105,8 +117,7 @@ if domain == "Cyber Security":
             st.markdown("##### Incidents by Status")
 
             #Generate bar chart for incident status
-            incident_status_data = incidents_by_status.set_index("status")
-            st.bar_chart(incident_status_data, use_container_width=True)
+            st.bar_chart(incidents_by_status, x = "status", y = "count")
             
         else:
             #Inform user that no data is available
@@ -122,29 +133,14 @@ if domain == "Cyber Security":
 
             #Generate pie chart for incident severity
             fig, ax = plt.subplots(figsize=(2.2, 2.2))
-            ax.pie(
-                    incidents_by_severity["count"],
-                    labels=incidents_by_severity["severity"],
-                    autopct="%1.0f%%",
-                    startangle=90,
-                    textprops={"fontsize": 5},
-                    )
+            ax.pie(incidents_by_severity["count"],
+                    labels = incidents_by_severity["severity"],
+                    autopct = "%1.0f%%",
+                    startangle = 90,
+                    textprops = {"fontsize": 5})
             ax.axis("equal")
             st.pyplot(fig, use_container_width=False)
 
         else:
             #Inform user that no data is available
             st.info("No cyber incident severity data available.")
-
-    #Display time-series for cyberincidents
-    if incidents_over_time.empty == False:
-        st.markdown("##### Incidents Over Time")
-
-        #Create line chart for number of incidents over time
-        st.line_chart(
-            incidents_over_time,
-            x="date",
-            y="count",
-            use_container_width=True)
-    else:
-        st.info("No time-series data of incidents available.")

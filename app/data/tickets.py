@@ -122,9 +122,23 @@ def get_high_priority_by_assignee(conn):
     Uses: SELECT, FROM, WHERE, GROUP BY, ORDER BY
     """
     query = """
-    SELECT COALESCE(assigned_to, 'Unassigned') as assigned_to, COUNT(*) as count
+    SELECT assigned_to, COUNT(*) as count
     FROM it_tickets
     WHERE priority = 'High'
+    GROUP BY assigned_to
+    ORDER BY count DESC
+    """
+    df = pd.read_sql_query(query, conn)
+    return df
+
+def get_tickets_by_assigned_to(conn):
+    """
+    Count tickets grouped by the assigned engineer.
+    Uses: SELECT, FROM, GROUP BY, ORDER BY
+    """
+    query = """
+    SELECT assigned_to, COUNT(*) as count
+    FROM it_tickets
     GROUP BY assigned_to
     ORDER BY count DESC
     """

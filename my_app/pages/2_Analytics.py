@@ -32,7 +32,7 @@ from app.data.tickets import (
     get_tickets_over_time,
     get_tickets_by_status_count,
     get_tickets_by_priority,
-    get_tickets_resolved_date)
+    get_tickets_by_assigned_to)
 
 #Connect to the shared intelligence platform database
 conn = connect_database()
@@ -227,7 +227,7 @@ if domain == "Data Science":
             #Generate bar chart for dataset column sizes
             st.bar_chart(dataset_column_counts, x = "dataset_name", y = "column_count", use_container_width = True)
         else:
-            #Inform user that no dataset-level metrics are available
+            #Inform user that no column counts of dataset are available
             st.info("No dataset column count information available.")       
 
         st.divider()
@@ -267,4 +267,54 @@ if domain == "IT Operations":
 
     st.divider()
 
-    
+    #Take tickets by assignees
+    tickets_by_assigned_to = get_tickets_by_assigned_to(conn)
+
+    #Verify if function successfully returned data
+    if tickets_by_assigned_to.empty == False:
+        st.markdown("##### Tickets by Assignees")
+
+        #Generate pie chart for ticket assignees
+        fig, ax = plt.subplots(figsize = (6.5, 2.5))
+        ax.pie(tickets_by_assigned_to["count"],
+                labels = tickets_by_assigned_to["assigned_to"],
+                autopct = "%1.0f%%",
+                startangle = 90,
+                textprops = {"fontsize": 5})
+        ax.axis("equal")
+        st.pyplot(fig, use_container_width = False) 
+
+    st.divider()
+
+    #Divide page into 2 columns
+    col1, col2 = st.columns(2)
+
+    with col1: 
+        #Take number of tickets by priority
+        tickets_by_priority = get_tickets_by_priority(conn)
+
+        #Verify if function returned data
+        if tickets_by_priority.empty == False:
+            st.markdown("##### Tickets by Priority")
+
+            #Generate bar chart for ticket priorities
+            st.bar_chart(tickets_by_priority, x = "priority", y = "count", use_container_width = True)
+
+        else:
+            #Inform user that no ticket priorities are found
+            st.info("No ticket priority information available.")
+
+    with col2:
+        #Take number of tickets by status
+        tickets_by_status = get_tickets_by_status_count(conn)
+
+        #Verify if function returned data
+        if tickets_by_status.empty == False:
+            st.markdown("##### Tickets by Status")
+
+            #Generate bar chart for ticket status
+            st.bar_chart(tickets_by_status, x = "status", y = "count", use_container_width = True)
+
+        else:
+            #Inform user that no ticket status is found
+            st.info("No ticket status information available.")

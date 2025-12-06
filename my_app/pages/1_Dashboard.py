@@ -122,11 +122,9 @@ else:
         incidents = get_all_incidents()
         total_incidents = len(incidents)
 
-        #Get maximum incident id from incident table
-        max_incident_id = int(incidents["id"].max())
-
-        #Get minimum incident id from incident table
-        min_incident_id = int(incidents["id"].min())
+        #Get maximum and minimum incident id from database
+        max_incident_id = int(incidents["id"].max()) if total_incidents else None
+        min_incident_id = int(incidents["id"].min()) if total_incidents else None
 
         #Fetches all Open incidents from database
         open_incidents = get_open_incidents(conn)
@@ -152,7 +150,10 @@ else:
             st.metric("High/Critical incidents", total_high_critical_incidents, border = True)
 
         #Display incidents in a table
-        st.dataframe(incidents, use_container_width = True)
+        if incidents.empty:
+            st.info("No incidents recorded yet. Add a new one below.")
+        else:
+            st.dataframe(incidents, use_container_width = True)
 
         st.divider()
         st.markdown("#### Incidents Management")
@@ -195,27 +196,64 @@ else:
 
         st.markdown("##### Delete Incident")
 
-        #Form to delete incident
-        with st.form("delete_incident"):
-            #Prompt user to select incident ID
-            incident_id_delete = st.number_input("Incident ID", min_value = min_incident_id, max_value = max_incident_id)
-            
-            #Checkbox to confirm deletion of incident
-            confirm_delete_incident = st.checkbox("Yes, delete incident")
-            #Button for form
-            submit_delete_incident = st.form_submit_button("Delete Incident")
+        if incidents.empty:
+            st.info("No incidents available for deletion or updates yet.")
+        else:
+            #Form to delete incident
+            with st.form("delete_incident"):
+                #Prompt user to select incident ID
+                incident_id_delete = st.number_input("Incident ID", min_value = min_incident_id, max_value = max_incident_id)
+                
+                #Checkbox to confirm deletion of incident
+                confirm_delete_incident = st.checkbox("Yes, delete incident")
+                #Button for form
+                submit_delete_incident = st.form_submit_button("Delete Incident")
 
-        #verify if form is submitted
-        if submit_delete_incident:
-            #Verify if checkbox is ticked
-            if not confirm_delete_incident:
-                #Inform user to tick checkbox
-                st.warning("Please confirm deletion before proceeding.")
-            else:
-                #Proceed with deletion of incident
-                if delete_incident(int(incident_id_delete)):
-                    #Inform user that incident was deleted
-                    st.success(f"Incident of ID {incident_id_delete} deleted.")
+            #verify if form is submitted
+            if submit_delete_incident:
+                #Verify if checkbox is ticked
+                if not confirm_delete_incident:
+                    #Inform user to tick checkbox
+                    st.warning("Please confirm deletion before proceeding.")
+                else:
+                    #Proceed with deletion of incident
+                    if delete_incident(int(incident_id_delete)):
+                        #Inform user that incident was deleted
+                        st.success(f"Incident of ID {incident_id_delete} deleted.")
+
+                        #Pause program for 1s
+                        time.sleep(1)
+                        #Rerun whole script
+                        st.rerun()
+                    else:
+                        #Error message
+                        st.error("No incident found with that ID.")
+
+            st.markdown("##### Update Incident")
+
+            #Form to update incident
+            with st.form("update_incident"):
+                #Prompt user to select incident ID
+                incident_id_update = st.number_input("Incident ID", min_value = min_incident_id, max_value = max_incident_id)
+                
+                #Prompt user to select new status of incident
+                new_incident_status = st.selectbox("New Status", ["-- Select New Status --", "Open", "In Progress", "Resolved", "Closed"], key="update_status")
+                #Button to submit form
+                submit_update = st.form_submit_button("Update Incident")
+
+            #Verify if form is submitted
+            if submit_update:
+                #Verify if new status is selected
+                if new_incident_status == "-- Select New Status --":
+                    #Warning message
+                    st.warning("Please select new status of incident.")
+                    #Stop whole execution of script
+                    st.stop()
+
+                #Proceed with updating incident status
+                if update_incident(conn, int(incident_id_update), new_incident_status):
+                    #Success message
+                    st.success(f"Incident of ID {incident_id_update} updated to {new_incident_status}.")
 
                     #Pause program for 1s
                     time.sleep(1)
@@ -224,40 +262,6 @@ else:
                 else:
                     #Error message
                     st.error("No incident found with that ID.")
-
-        st.markdown("##### Update Incident")
-
-        #Form to update incident
-        with st.form("update_incident"):
-            #Prompt user to select incident ID
-            incident_id_update = st.number_input("Incident ID", min_value = min_incident_id, max_value = max_incident_id)
-            
-            #Prompt user to select new status of incident
-            new_incident_status = st.selectbox("New Status", ["-- Select New Status --", "Open", "In Progress", "Resolved", "Closed"], key="update_status")
-            #Button to submit form
-            submit_update = st.form_submit_button("Update Incident")
-
-        #Verify if form is submitted
-        if submit_update:
-            #Verify if new status is selected
-            if new_incident_status == "-- Select New Status --":
-                #Warning message
-                st.warning("Please select new status of incident.")
-                #Stop whole execution of script
-                st.stop()
-
-            #Proceed with updating incident status
-            if update_incident(conn, int(incident_id_update), new_incident_status):
-                #Success message
-                st.success(f"Incident of ID {incident_id_update} updated to {new_incident_status}.")
-
-                #Pause program for 1s
-                time.sleep(1)
-                #Rerun whole script
-                st.rerun()
-            else:
-                #Error message
-                st.error("No incident found with that ID.")
 
     #Verify if domain is Data Science
     if domain == "Data Science":
@@ -268,11 +272,9 @@ else:
         datasets = get_all_datasets()
         total_datasets = len(datasets)
 
-        #Get min dataset id from datasets table
-        min_dataset_id = int(datasets["id"].min())
-
-        #Get max dataset id from datasets table
-        max_dataset_id = int(datasets["id"].max())
+        #Get maximum and minimum dataset id from database
+        min_dataset_id = int(datasets["id"].min()) if total_datasets else None
+        max_dataset_id = int(datasets["id"].max()) if total_datasets else None
 
         #Fetches all datasets with >10000 record counts
         large_datasets = get_large_datasets_by_source(conn)
@@ -298,7 +300,10 @@ else:
             st.metric("More than 10 columns", total_large_col_datasets, border = True)
 
         #Display datasets in a table
-        st.dataframe(datasets, use_container_width = True)
+        if datasets.empty:
+            st.info("No datasets recorded yet. Add a new one below.")
+        else:
+            st.dataframe(datasets, use_container_width = True)
 
         st.divider()
         st.markdown("#### Datasets Management")
@@ -346,63 +351,66 @@ else:
         
         st.markdown("##### Delete Dataset")
 
-        #Form to delete dataset
-        with st.form("delete_dataset"):
-            #Prompt user to select dataset ID
-            dataset_id_delete = st.number_input("Dataset ID", min_value = min_dataset_id, max_value = max_dataset_id)
+        if datasets.empty:
+            st.info("No datasets available for deletion or updates yet.")
+        else:
+            #Form to delete dataset
+            with st.form("delete_dataset"):
+                #Prompt user to select dataset ID
+                dataset_id_delete = st.number_input("Dataset ID", min_value = min_dataset_id, max_value = max_dataset_id)
 
-            #Checkbox to confirm deletion of dataset
-            confirm_delete_dataset = st.checkbox("Yes, delete dataset.")
-            #Button for form
-            submit_delete_dataset = st.form_submit_button("Delete Dataset")
+                #Checkbox to confirm deletion of dataset
+                confirm_delete_dataset = st.checkbox("Yes, delete dataset.")
+                #Button for form
+                submit_delete_dataset = st.form_submit_button("Delete Dataset")
 
-        #Verify if form is submitted
-        if submit_delete_dataset:
-            #Verify if checkbox is ticked
-            if not confirm_delete_dataset:
-                #Inform user to tick checkbox
-                st.warning("Please confirm deletion before proceeding.")
-            else:
-                #Proceed with deletion of dataset
-                if delete_dataset(int(dataset_id_delete)):
+            #Verify if form is submitted
+            if submit_delete_dataset:
+                #Verify if checkbox is ticked
+                if not confirm_delete_dataset:
+                    #Inform user to tick checkbox
+                    st.warning("Please confirm deletion before proceeding.")
+                else:
+                    #Proceed with deletion of dataset
+                    if delete_dataset(int(dataset_id_delete)):
+                        #Success message
+                        st.success(f"Dataset of ID {dataset_id_delete} deleted.")
+
+                        #Pause program for 1s
+                        time.sleep(1)
+                        #Rerun whole script
+                        st.rerun()
+                    else:
+                        #Error message
+                        st.error("No dataset found with that ID")
+
+
+            st.markdown("##### Update Dataset")
+
+            #Form to update incident
+            with st.form("update_dataset"):
+                #Prompt user to select dataset ID
+                dataset_id_update = st.number_input("Dataset ID", min_value = min_dataset_id, max_value = max_dataset_id)
+                
+                #Prompt user to select new record count of dataset
+                new_record_count = st.number_input("New Record Count", min_value = 1000, step = 1000)
+                
+                #Button to submit form
+                submit_dataset_update = st.form_submit_button("Update Dataset")
+
+            #verify if form is submitted
+            if submit_dataset_update:
+                #Proceeds with updating record of dataset
+                if update_dataset_record(conn, int(dataset_id_update), int(new_record_count)):
                     #Success message
-                    st.success(f"Dataset of ID {dataset_id_delete} deleted.")
-
+                    st.success(f"Dataset of ID {dataset_id_update} updated to {new_record_count} records.")
                     #Pause program for 1s
                     time.sleep(1)
                     #Rerun whole script
                     st.rerun()
                 else:
                     #Error message
-                    st.error("No dataset found with that ID")
-
-
-        st.markdown("##### Update Dataset")
-
-        #Form to update incident
-        with st.form("update_dataset"):
-            #Prompt user to select dataset ID
-            dataset_id_update = st.number_input("Dataset ID", min_value = min_dataset_id, max_value = max_dataset_id)
-            
-            #Prompt user to select new record count of dataset
-            new_record_count = st.number_input("New Record Count", min_value = 1000, step = 1000)
-            
-            #Button to submit form
-            submit_dataset_update = st.form_submit_button("Update Dataset")
-
-        #verify if form is submitted
-        if submit_dataset_update:
-            #Proceeds with updating record of dataset
-            if update_dataset_record(conn, int(dataset_id_update), int(new_record_count)):
-                #Success message
-                st.success(f"Dataset of ID {dataset_id_update} updated to {new_record_count} records.")
-                #Pause program for 1s
-                time.sleep(1)
-                #Rerun whole script
-                st.rerun()
-            else:
-                #Error message
-                st.error("No dataset found with that ID.")
+                    st.error("No dataset found with that ID.")
 
     #Verify if domain is IT Operations
     if domain == "IT Operations":
@@ -413,11 +421,9 @@ else:
         tickets = get_all_tickets()
         total_tickets = len(tickets)
 
-        #Get maximum ticket id from tickets table
-        max_ticket_id = int(tickets["id"].max())
-
-        #Get minimum ticket id from tickets table
-        min_ticket_id = int(tickets["id"].min())
+        #Get maximum and minimum ticket id from database
+        max_ticket_id = int(tickets["id"].max()) if total_tickets else None
+        min_ticket_id = int(tickets["id"].min()) if total_tickets else None
 
         #Fetch open tickets count
         open_tickets = get_open_tickets(conn)
@@ -443,7 +449,10 @@ else:
             st.metric("High/Critical Tickets", total_high_critical_tickets, border = True)
 
         #Display tickets in a table
-        st.dataframe(tickets, use_container_width = True)    
+        if tickets.empty:
+            st.info("No tickets recorded yet. Add a new one below.")
+        else:
+            st.dataframe(tickets, use_container_width = True)    
 
         st.divider()
         st.markdown("#### Tickets Management")
@@ -497,69 +506,72 @@ else:
 
         st.markdown("##### Delete Ticket")
 
-        #Form to delete ticket
-        with st.form("delete_ticket"):
-            #Prompt user to select ticket ID
-            ticket_id_delete = st.number_input("Ticket ID", min_value = min_ticket_id, max_value = max_ticket_id)
+        if tickets.empty:
+            st.info("No tickets available for deletion or updates yet.")
+        else:
+            #Form to delete ticket
+            with st.form("delete_ticket"):
+                #Prompt user to select ticket ID
+                ticket_id_delete = st.number_input("Ticket ID", min_value = min_ticket_id, max_value = max_ticket_id)
 
-            #Checkbox to confirm deletion of ticket
-            confirm_delete_ticket = st.checkbox("Yes, delete ticket.")
-            #Button for form
-            submit_delete_ticket = st.form_submit_button("Delete Ticket")
+                #Checkbox to confirm deletion of ticket
+                confirm_delete_ticket = st.checkbox("Yes, delete ticket.")
+                #Button for form
+                submit_delete_ticket = st.form_submit_button("Delete Ticket")
 
-        #Verify if form is submitted
-        if submit_delete_ticket:
-            #Verify if checkbox is ticked
-            if not confirm_delete_ticket:
-                #Inform user to tick checkbox
-                st.warning("Please confirm deletion before proceeding.")
-            else:
-                #Proceed with deletion of ticket
-                if delete_ticket(int(ticket_id_delete)):
-                    #Inform user that ticket was deleted
-                    st.success(f"Ticket of ID {ticket_id_delete} deleted.")
+            #Verify if form is submitted
+            if submit_delete_ticket:
+                #Verify if checkbox is ticked
+                if not confirm_delete_ticket:
+                    #Inform user to tick checkbox
+                    st.warning("Please confirm deletion before proceeding.")
+                else:
+                    #Proceed with deletion of ticket
+                    if delete_ticket(int(ticket_id_delete)):
+                        #Inform user that ticket was deleted
+                        st.success(f"Ticket of ID {ticket_id_delete} deleted.")
+
+                        #Pause program for 1s
+                        time.sleep(1)
+                        #Rerun whole script
+                        st.rerun()
+                    else:
+                        #Error message
+                        st.error("No ticket found with that ID")
+
+
+            st.markdown("##### Update Ticket")
+
+            #Form to update ticket
+            with st.form("update_ticket"):
+                #Prompt user to select ticket ID
+                ticket_id_update = st.number_input("Incident ID", min_value = min_ticket_id, max_value = max_ticket_id)
+                
+                #Prompt user to select new status of ticket
+                new_ticket_status = st.selectbox("New Status", ["-- Select New Status --", "Open", "In Progress", "Waiting for User", "Resolved", "Closed"], key="update_status")
+                #Button to submit form
+                submit_ticket_update = st.form_submit_button("Update Ticket")
+
+            #Verify if form is submitted
+            if submit_ticket_update:
+                #Verify if new status is selected
+                if new_ticket_status == "-- Select New Status --":
+                    #Warning message
+                    st.warning("Please select new status of ticket.")
+                    #Stop whole execution of script
+                    st.stop()
+
+                #Proceed with updating ticket status
+                if update_ticket(conn, int(ticket_id_update), new_ticket_status):
+                    #Success message
+                    st.success(f"Ticket of ID {ticket_id_update} updated to {new_ticket_status}.")
 
                     #Pause program for 1s
-                    time.sleep(1)
+                    time.sleep(1.2)
                     #Rerun whole script
                     st.rerun()
                 else:
                     #Error message
-                    st.error("No ticket found with that ID")
-
-
-        st.markdown("##### Update Ticket")
-
-        #Form to update ticket
-        with st.form("update_ticket"):
-            #Prompt user to select ticket ID
-            ticket_id_update = st.number_input("Incident ID", min_value = min_ticket_id, max_value = max_ticket_id)
-            
-            #Prompt user to select new status of ticket
-            new_ticket_status = st.selectbox("New Status", ["-- Select New Status --", "Open", "In Progress", "Waiting for User", "Resolved", "Closed"], key="update_status")
-            #Button to submit form
-            submit_ticket_update = st.form_submit_button("Update Ticket")
-
-        #Verify if form is submitted
-        if submit_ticket_update:
-            #Verify if new status is selected
-            if new_ticket_status == "-- Select New Status --":
-                #Warning message
-                st.warning("Please select new status of ticket.")
-                #Stop whole execution of script
-                st.stop()
-
-            #Proceed with updating ticket status
-            if update_ticket(conn, int(ticket_id_update), new_ticket_status):
-                #Success message
-                st.success(f"Ticket of ID {ticket_id_update} updated to {new_ticket_status}.")
-
-                #Pause program for 1s
-                time.sleep(1.2)
-                #Rerun whole script
-                st.rerun()
-            else:
-                #Error message
-                st.error("No ticket found with that ID.")
+                    st.error("No ticket found with that ID.")
 
     conn.commit()

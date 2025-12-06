@@ -40,6 +40,10 @@ def get_system_prompt(domain):
                         - Translate impact in terms of SLAs and business services
                         - Communicate clearly for support engineers and stakeholders
                         """
+    else:
+        #Basic system prompt
+        system_prompt = "You are a helpful assistant."
+
     #Prompt message is returned
     return system_prompt
 
@@ -108,5 +112,9 @@ def get_ai_prompt(domain, inquiry):
                 -Resolved Date: {inquiry['resolved_date']}
                 -Description: {inquiry['description']}
             """
+    else:
+        #General prompt on provided inquiry
+        prompt = "Provide an expert analysis based on the supplied information."
+
     #Prompt message is returned
     return prompt

@@ -32,17 +32,20 @@ def get_system_prompt(domain):
     #System prompt for IT Operations specialised AI Assistant
     elif domain == "IT Operations":
         system_prompt = """
-                        You are a senior data science assistant.
+                        You are an IT operations command-center assistant.
 
-                        - Clarify objectives, constraints, and data context
-                        - Recommend statistical tests, ML models, and feature engineering steps
-                        - Provide python/pandas/scikit-learn code when helpful
-                        - Justify trade-offs between accuracy, interpretability, and compute cost
-                        - Highlight data quality, bias, and validation considerations
+                        - Triage incidents and service tickets quickly
+                        - Recommend troubleshooting steps and escalation paths
+                        - Call out monitoring, automation, and reliability improvements
+                        - Translate impact in terms of SLAs and business services
+                        - Communicate clearly for support engineers and stakeholders
                         """
+    #Prompt message is returned
     return system_prompt
 
-def get_ai_prompt(domain, problem):
+#Function that returns prompt for inguiry(incident/dataset/ticket) in a certain domain
+def get_ai_prompt(domain, inquiry):
+    #Prompt for incident in cyber security domain
     if domain == "Cyber Security":
         prompt = f"""
                 You are a cybersecurity expert assistant.
@@ -55,17 +58,18 @@ def get_ai_prompt(domain, problem):
                 -Risk level with explanation
 
                 Incident details:
-                -Type: {problem['incident_type']}
-                -Severity: {problem['severity']}
-                -Status: {problem['status']}
-                -Description: {problem['description']}
+                -Type: {inquiry['incident_type']}
+                -Severity: {inquiry['severity']}
+                -Status: {inquiry['status']}
+                -Description: {inquiry['description']}
             """
+        
+    #Prompt for dataset in data science domain
     elif domain == "Data Science":
         prompt = f"""
                 You are a senior data science assistant.
 
-                Review the following dataset metadata and provide
-                -Analyse the dataset
+                Review the following dataset metadata and provide:
                 -Primary business problems or analyses this dataset can support
                 -Recommended data quality checks or integrity issues to watch
                 -Feature engineering or transformation ideas
@@ -73,12 +77,36 @@ def get_ai_prompt(domain, problem):
                 -Operational considerations (refresh cadence, owners, monitoring)
 
                 Dataset details:
-                -Name: {problem['dataset_name']}
-                -Category: {problem['category']}
-                -Source: {problem['source']}
-                -Last Updated: {problem['last_updated']}
-                -Record Count: {problem['record_count']}
-                -Column Count: {problem['column_count']}
-                -File Size (MB): {problem['file_size_mb']}
+                -Name: {inquiry['dataset_name']}
+                -Category: {inquiry['category']}
+                -Source: {inquiry['source']}
+                -Last Updated: {inquiry['last_updated']}
+                -Record Count: {inquiry['record_count']}
+                -Column Count: {inquiry['column_count']}
+                -File Size (MB): {inquiry['file_size_mb']}
             """
+        
+    #Prompt for IT ticket in IT operations domain
+    elif domain == "IT Operations":
+        prompt = f"""
+                You are an IT operations command-center assistant.
+
+                Review the following ticket and provide:
+                -Likely root cause or impacted services
+                -Immediate triage steps and tooling/logs required
+                -Escalation or collaboration recommendations
+                -Preventive automation or monitoring improvements
+                -Risk level / SLA considerations with justification
+
+                Ticket details:
+                -Subject: {inquiry['subject']}
+                -Priority: {inquiry['priority']}
+                -Status: {inquiry['status']}
+                -Category: {inquiry['category']}
+                -Assigned To: {inquiry.get('assigned_to', 'Unassigned')}
+                -Created Date: {inquiry['created_date']}
+                -Resolved Date: {inquiry.get('resolved_date', 'Not resolved')}
+                -Description: {inquiry['description']}
+            """
+    #Prompt message is returned
     return prompt

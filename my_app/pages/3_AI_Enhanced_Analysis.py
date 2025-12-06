@@ -214,3 +214,70 @@ if domain == "Data Science":
     else:
         #Inform user that no datasets are available
         st.info("No datasets available for analysis.")
+
+#Verify if domain is IT operations
+if domain == "IT Operations":
+    #Fetch tickets from database
+    tickets = get_all_tickets()
+
+    #Verify if any tickets exist
+    if tickets.empty == False:
+        #Convert dataframe to dictionaries
+        ticket_records = tickets.to_dict(orient="records")
+
+        #Format ticket options for dropdown
+        ticket_options = [
+            f"{ticket['id']} : {ticket['subject']} - {ticket['priority']} ({ticket['status']})"
+            for ticket in ticket_records
+        ]
+
+        #Allow user to select ticket
+        selected_idx = st.selectbox(
+            "Select ticket to analyse:",
+            options=range(len(ticket_records)),
+            format_func=lambda i: ticket_options[i],
+        )
+
+        #Get ticket selected from dropdown
+        ticket = ticket_records[selected_idx]
+
+        #Display ticket details
+        st.markdown("#### Overview of Ticket Details")
+        st.write(f"**ID:** {ticket['id']}")
+        st.write(f"**Subject:** {ticket['subject']}")
+        st.write(f"**Priority:** {ticket['priority']}")
+        st.write(f"**Status:** {ticket['status']}")
+        st.write(f"**Category:** {ticket['category']}")
+        st.write(f"**Assigned To:** {ticket.get('assigned_to', 'Unassigned')}")
+        st.write(f"**Created Date:** {ticket['created_date']}")
+        st.write(f"**Resolved Date:** {ticket.get('resolved_date', 'Not resolved')}")
+        st.write(f"**Description:** {ticket['description']}")
+
+        st.divider()
+
+        #Button to enable AI analysis
+        if st.button("Allow AI Analysis", key="it-ops-ai-analysis"):
+
+            st.divider()
+
+            #Get message prompt about ticket details for AI analysis
+            prompt = get_ai_prompt(domain, ticket)
+
+            #Send request to OpenAI
+            response = client.chat.completions.create(
+                model = "gpt-4o",
+                messages = [
+                    {"role":"system", "content":system_prompt},
+                    {"role":"user", "content":prompt}]
+                )
+
+            #Retrieve AI output
+            ai_response = response.choices[0].message.content
+
+            #Display AI analysis
+            st.markdown("#### AI-Enhanced Analysis")
+            st.write(ai_response)
+
+    else:
+        #Inform user that no tickets are available
+        st.info("No tickets available for analysis.")

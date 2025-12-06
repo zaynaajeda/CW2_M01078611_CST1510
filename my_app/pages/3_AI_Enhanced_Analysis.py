@@ -42,7 +42,7 @@ if "selected_domain" not in st.session_state:
 
 # Check if user is logged in
 if not st.session_state.logged_in:
-    st.error("You must be logged in to view the AI Analyser page.")
+    st.error("You must be logged in to view the AI-Enhanced Analysis page.")
 
     #Button to go back to login/register page
     if st.button("Go to Login/Register page"):

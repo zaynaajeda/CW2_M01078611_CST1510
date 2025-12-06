@@ -103,9 +103,9 @@ def get_ai_prompt(domain, inquiry):
                 -Priority: {inquiry['priority']}
                 -Status: {inquiry['status']}
                 -Category: {inquiry['category']}
-                -Assigned To: {inquiry.get('assigned_to', 'Unassigned')}
+                -Assigned To: {inquiry['assigned_to']}
                 -Created Date: {inquiry['created_date']}
-                -Resolved Date: {inquiry.get('resolved_date', 'Not resolved')}
+                -Resolved Date: {inquiry['resolved_date']}
                 -Description: {inquiry['description']}
             """
     #Prompt message is returned

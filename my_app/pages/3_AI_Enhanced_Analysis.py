@@ -227,13 +227,13 @@ if domain == "IT Operations":
 
         #Format ticket options for dropdown
         ticket_options = [
-            f"{ticket['id']} : {ticket['subject']} - {ticket['priority']} ({ticket['status']})"
+            f"{ticket['id']} : {ticket['subject']} - {ticket['priority']} - {ticket['status']}"
             for ticket in ticket_records
         ]
 
         #Allow user to select ticket
         selected_idx = st.selectbox(
-            "Select ticket to analyse:",
+            "Select ticket to analyse (ID: subject - priority - status):",
             options=range(len(ticket_records)),
             format_func=lambda i: ticket_options[i],
         )
@@ -248,10 +248,10 @@ if domain == "IT Operations":
         st.write(f"**Priority:** {ticket['priority']}")
         st.write(f"**Status:** {ticket['status']}")
         st.write(f"**Category:** {ticket['category']}")
-        st.write(f"**Assigned To:** {ticket.get('assigned_to', 'Unassigned')}")
-        st.write(f"**Created Date:** {ticket['created_date']}")
-        st.write(f"**Resolved Date:** {ticket.get('resolved_date', 'Not resolved')}")
+        st.write(f"**Resolved Date:** {ticket['resolved_date']}")
+        st.write(f"**Assigned To:** {ticket['assigned_to']}")
         st.write(f"**Description:** {ticket['description']}")
+        st.write(f"**Created Date:** {ticket['created_date']}")
 
         st.divider()
 

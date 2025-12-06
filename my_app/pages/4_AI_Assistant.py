@@ -4,6 +4,50 @@ import os
 import sys
 from my_app.components.sidebar import logout_section
 
+#Function that returns system prompt for a certain domain
+def get_system_prompt(domain):
+    #System prompts for each domain
+    #System prompt for general AI Assistant
+    if domain == "General":
+        system_prompt = "You are a helpful assistant."
+
+    #System prompt for Cyber Security specialised AI Assistant
+    elif domain == "Cyber Security":
+        system_prompt = """
+                        You are a cybersecurity expert assistant.
+
+                        - Analyze incidents and threats
+                        - Provide technical guidance
+                        - Explain attack vectors & mitigations
+                        - Use standard terminology (MITRE, CVE)
+                        - Prioritize actionable recommendations
+                        """
+        
+    #System prompt for Data Science specialised AI Assistant
+    elif domain == "Data Science":
+        system_prompt = """
+                        You are a senior data science assistant.
+
+                        - Clarify objectives, constraints, and data context
+                        - Recommend statistical tests, ML models, and feature engineering steps
+                        - Provide python/pandas/scikit-learn code when helpful
+                        - Justify trade-offs between accuracy, interpretability, and compute cost
+                        - Highlight data quality, bias, and validation considerations
+                        """
+
+    #System prompt for IT Operations specialised AI Assistant
+    elif domain == "IT Operations":
+        system_prompt = """
+                        You are a senior data science assistant.
+
+                        - Clarify objectives, constraints, and data context
+                        - Recommend statistical tests, ML models, and feature engineering steps
+                        - Provide python/pandas/scikit-learn code when helpful
+                        - Justify trade-offs between accuracy, interpretability, and compute cost
+                        - Highlight data quality, bias, and validation considerations
+                        """
+    return system_prompt
+
 #Adjust path to main project directory
 ROOT_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 sys.path.append(ROOT_DIR)
@@ -38,48 +82,9 @@ st.title("AI Assistant")
 #Allow user to choose Specific AI Assistant
 assistant_domain = st.selectbox("Choose AI Assistant", ["General", "Cyber Security", "Data Science", "IT Operations"])
 
-#System prompts for each domain
-#System prompt for general AI Assistant
-if assistant_domain == "General":
-    system_prompt = "You are a helpful assistant."
-
-#System prompt for Cyber Security specialised AI Assistant
-elif assistant_domain == "Cyber Security":
-    system_prompt = """
-                    You are a cybersecurity expert assistant.
-
-                    - Analyze incidents and threats
-                    - Provide technical guidance
-                    - Explain attack vectors & mitigations
-                    - Use standard terminology (MITRE, CVE)
-                    - Prioritize actionable recommendations
-                    """
-    
-#System prompt for Data Science specialised AI Assistant
-elif assistant_domain == "Data Science":
-    system_prompt = """
-                    You are a senior data science assistant.
-
-                    - Clarify objectives, constraints, and data context
-                    - Recommend statistical tests, ML models, and feature engineering steps
-                    - Provide python/pandas/scikit-learn code when helpful
-                    - Justify trade-offs between accuracy, interpretability, and compute cost
-                    - Highlight data quality, bias, and validation considerations
-                    """
-
-#System prompt for IT Operations specialised AI Assistant
-elif assistant_domain == "IT Operations":
-    system_prompt = """
-                    You are a senior data science assistant.
-
-                    - Clarify objectives, constraints, and data context
-                    - Recommend statistical tests, ML models, and feature engineering steps
-                    - Provide python/pandas/scikit-learn code when helpful
-                    - Justify trade-offs between accuracy, interpretability, and compute cost
-                    - Highlight data quality, bias, and validation considerations
-                    """
-
 st.divider()
+
+system_prompt = get_system_prompt(assistant_domain)
 
 #Initialise session state for messages
 if "messages" not in st.session_state:

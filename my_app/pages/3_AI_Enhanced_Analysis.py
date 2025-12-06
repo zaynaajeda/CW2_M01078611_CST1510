@@ -12,6 +12,8 @@ from app.data.db import connect_database
 #Import logout function
 from my_app.components.sidebar import logout_section
 
+
+
 #Adjust path to main project directory
 ROOT_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 sys.path.append(ROOT_DIR)

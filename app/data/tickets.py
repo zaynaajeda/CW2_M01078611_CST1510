@@ -146,6 +146,34 @@ def get_categories_with_many_tickets(conn, min_count=5):
     df = pd.read_sql_query(query, conn, params=(min_count,))
     return df
 
+def get_tickets_by_priority(conn):
+    """
+    Count tickets grouped by priority.
+    Uses: SELECT, FROM, GROUP BY, ORDER BY
+    """
+    query = """
+    SELECT priority, COUNT(*) as count
+    FROM it_tickets
+    GROUP BY priority
+    ORDER BY count DESC
+    """
+    df = pd.read_sql_query(query, conn)
+    return df
+
+def get_tickets_over_time(conn):
+    """
+    Count tickets created per day.
+    Uses: SELECT, FROM, GROUP BY, ORDER BY
+    """
+    query = """
+    SELECT created_date, COUNT(*) as count
+    FROM it_tickets
+    GROUP BY created_date
+    ORDER BY created_date ASC
+    """
+    df = pd.read_sql_query(query, conn)
+    return df
+
 def get_open_tickets(conn):
     """
     Retrieve all tickets that are currently open.
@@ -173,6 +201,7 @@ def get_high_or_critical_tickets(conn):
     """
     df = pd.read_sql_query(query, conn)
     return df
+
 
 # Test: Run analytical queries
 conn = connect_database()

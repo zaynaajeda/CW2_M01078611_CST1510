@@ -2,6 +2,7 @@ import streamlit as st
 import sys
 import os
 import matplotlib.pyplot as plt
+import pandas as pd
 
 #Adjust path to main project directory
 ROOT_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -26,6 +27,12 @@ from app.data.datasets import (
     get_datasets_over_time,
     get_dataset_record_counts,
     get_dataset_column_counts)
+
+from app.data.tickets import (
+    get_tickets_over_time,
+    get_tickets_by_status_count,
+    get_tickets_by_priority,
+    get_tickets_resolved_date)
 
 #Connect to the shared intelligence platform database
 conn = connect_database()
@@ -85,6 +92,7 @@ if st.session_state.logged_in:
         #Implement logout
         logout_section()
 
+#Verify if domain is cyber security
 if domain == "Cyber Security":
     #Take number of incidents per day
     incidents_over_time = get_incidents_over_time(conn)
@@ -118,6 +126,8 @@ if domain == "Cyber Security":
         else:
             #Inform user that no data is available
             st.info("No cyber incident data available.")
+
+        st.divider()
 
         #Take incidents by status
         incidents_by_status = get_incidents_by_status(conn)
@@ -155,6 +165,7 @@ if domain == "Cyber Security":
             #Inform user that no data is available
             st.info("No cyber incident severity data available.")
 
+#Verify if domain is data science
 if domain == "Data Science":
     #Take number of datasets per day
     datasets_over_time = get_datasets_over_time(conn)
@@ -236,4 +247,24 @@ if domain == "Data Science":
                     startangle = 90,
                     textprops = {"fontsize": 5})
             ax.axis("equal")
-            st.pyplot(fig, use_container_width = False)      
+            st.pyplot(fig, use_container_width = False)   
+
+#Verify if domain is IT operations
+if domain == "IT Operations":   
+    #Take number of tickets created per day
+    tickets_over_time = get_tickets_over_time(conn)
+
+    #Display time-series for IT tickets
+    if tickets_over_time.empty == False:
+        st.markdown("##### Tickets over Time")
+
+        #Create line chart for number of tickets over time
+        st.line_chart(tickets_over_time, x = "created_date", y = "count")
+
+    else:
+        #Inform user that no data is available to plot
+        st.info("No time-series data of tickets available.")
+
+    st.divider()
+
+    

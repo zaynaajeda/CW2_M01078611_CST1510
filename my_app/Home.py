@@ -105,10 +105,9 @@ with tab_register:
     new_password = st.text_input("Choose a password", type="password", key="register_password")
     confirm_password = st.text_input("Confirm password", type="password", key="register_confirm")
 
-    #Password guidance
-    st.info(
-        "Passwords must contain 7-50 characters and include at least one uppercase letter, "
-        "one lowercase letter, one number, and one special character.")
+    #Inform user what password should contain
+    st.info("Passwords must contain 7-50 characters and include at least one uppercase letter, "
+             "one lowercase letter, one number, and one special character.")
 
     #Create account button
     if st.button("Create account"):

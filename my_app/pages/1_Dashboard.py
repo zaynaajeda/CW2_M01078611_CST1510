@@ -109,11 +109,12 @@ else:
     #Connect to the shared intelligence platform database
     conn = connect_database()
 
+    #Inform user about domain selected
+    st.info(f"Selected domain: **{domain}**")
+    st.divider()
+
     #Verify if domain is Cyber Security
     if domain == "Cyber Security":
-        st.subheader("Cyber Security")
-
-        st.divider()
 
         st.markdown("##### Overview of Incidents")
 
@@ -260,9 +261,6 @@ else:
 
     #Verify if domain is Data Science
     if domain == "Data Science":
-        st.subheader("Data Science")
-
-        st.divider()
 
         st.markdown("##### Overview of Datasets")
 
@@ -408,10 +406,7 @@ else:
 
     #Verify if domain is IT Operations
     if domain == "IT Operations":
-        st.subheader("IT Operations")
-
-        st.divider()
-
+        
         st.markdown("##### Overview of Tickets")
 
         #Fetch all tickets from database

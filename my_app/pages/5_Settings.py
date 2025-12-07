@@ -1,6 +1,7 @@
 import os
 import sys
 from pathlib import Path
+import time
 
 import streamlit as st
 
@@ -111,11 +112,12 @@ if submitted:
 
         else:
             #Success message and update password
-            success, message = change_password(
-                st.session_state.username, current_password, new_password
-            )
+            success, message = change_password(st.session_state.username, current_password, new_password)
+
             if success:
                 st.success(message)
+                #Pause program for 1s
+                time.sleep(1)
             else:
                 st.error(message)
 
@@ -124,22 +126,7 @@ st.markdown("#### User Management")
 
 st.markdown("##### Overview of Users")
 users = get_all_users()
-usernames = [user["username"] for user in users]
-
-file_usernames = []
-try:
-    with open(USER_DATA_FILE, "r") as f:
-        for line in f:
-            entry = line.strip()
-            if not entry:
-                continue
-            parts = entry.split(",", 2)
-            if parts:
-                file_usernames.append(parts[0])
-except FileNotFoundError:
-    pass
-
-available_usernames = sorted(set(usernames + file_usernames))
+usernames = sorted({user["username"] for user in users})
 
 if not users:
     st.info("No registered users found.")
@@ -183,16 +170,18 @@ else:
                     st.session_state.username = ""
                     st.session_state.role = ""
                     st.session_state.selected_domain = None
+                #Pause program for 1s
+                time.sleep(1)
                 st.rerun()
             else:
                 st.error(msg)
 
 st.markdown("##### Reset User Password")
-if not available_usernames:
+if not usernames:
     st.info("No users available to reset.")
 else:
     with st.form("admin_reset_password"):
-        reset_user = st.selectbox("Choose user", available_usernames)
+        reset_user = st.selectbox("Choose user", usernames)
         admin_new_password = st.text_input("New Password", type="password")
         admin_confirm_password = st.text_input("Confirm New Password", type="password")
         confirm_reset = st.checkbox("Yes, reset this user's password")

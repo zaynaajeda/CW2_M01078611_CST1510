@@ -157,10 +157,11 @@ else:
             #Generate metric for high or critical incidents
             st.metric("High/Critical incidents", total_high_critical_incidents, border = True)
 
-        #Display incidents in a table
+        #Verify if incidents database was found
         if incidents.empty:
             st.info("No incidents recorded yet. Add a new one below.")
         else:
+            #Display incidents in a table
             st.dataframe(incidents, use_container_width = True)
         
         st.divider()
@@ -175,6 +176,8 @@ else:
             status = st.selectbox("Status", ["Open", "In Progress", "Resolved", "Closed"])
             date = st.date_input("Date Reported")
             description = st.text_area("Description")
+
+            #Checkbox to confirm new incident
             confirm_add_incident = st.checkbox("Yes, add incident.")
                 
             #Submit button for the form

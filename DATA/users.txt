@@ -2,3 +2,4 @@ alice,b'$2b$12$Z/QNWWu6lielcId0s8oK5.5j3FVdc329HEqb/Fq2pnC5HV0ex7sQe',analyst
 bob,b'$2b$12$KAewI6pklfAqlWvslET/c.Umldp0KBks/4mIwZuUimSEXPib0SwBC',user
 Zayna,$2b$12$/lB36ELhOyP5B7slSdW6seV.DPNySnbhEUCT6Q4ahhWY6sIyy.9MS,admin
 anna,$2b$12$8GKfQlZssApzFleP539CueWJaSZwO.ODbrI0PtN1CbjTZ112hnhJK,analyst
+Alice,$2b$12$kz9cxLUllB7JLo9ZdHtBB.z/klFjf8MfGSPnZLigxs6fr4i84ICYS,user

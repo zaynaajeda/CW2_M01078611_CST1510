@@ -102,13 +102,12 @@ with tab_login:
 #Register Tab
 with tab_register:
 
+    # The registration requires user to choose a username, role, password.
 
-            # The registration requires user to choose a username, role, password.
-
-            # After writing of the credentials, the program validates the username and password to see if
-            # they are in required format. 
-            # The password strength is also checked.
-            # Both passwords are compared to see if they match.
+    # After writing of the credentials, the program validates the username and password to see if
+    # they are in required format. 
+    # The password strength is also checked.
+    # Both passwords are compared to see if they match.
 
 
     #Subheading

@@ -1,12 +1,21 @@
-import streamlit as st
-import sys
 import os
+import sys
+from pathlib import Path
+
+import streamlit as st
 
 #Adjust path to main project directory
 ROOT_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 sys.path.append(ROOT_DIR)
 
-from app.services.auth import validate_password, change_password
+from app.data.db import connect_database
+from app.services.user_service import migrate_users_from_file
+from app.services.auth import validate_password, change_password, valid_roles
+from app.data.users import (
+    get_all_users,
+    update_user_role,
+    delete_user)
+
 from my_app.components.sidebar import logout_section
 
 #Webpage title and icon
@@ -41,6 +50,12 @@ if not st.session_state.logged_in:
 #Settings content for logged-in users
 st.title("Settings")
 st.divider()
+
+#Keep users table/file in sync when Settings loads
+conn = connect_database()
+migrate_users_from_file(conn, Path("DATA/users.txt"))
+conn.close()
+
 
 #Verify if user is logged in
 if st.session_state.logged_in:
@@ -102,3 +117,82 @@ if submitted:
                 st.success(message)
             else:
                 st.error(message)
+
+st.divider()
+st.markdown("#### User Management")
+
+users = get_all_users()
+
+if not users:
+    st.info("No registered users found.")
+else:
+    st.dataframe(users, use_container_width=True)
+
+    st.markdown("##### Update User Role")
+    with st.form("admin_update_role"):
+        usernames = [user["username"] for user in users]
+        selected_user = st.selectbox("Select user", usernames)
+        new_role = st.selectbox("New role", valid_roles)
+        confirm_update = st.checkbox("Yes, update this user's role")
+        submit_role_update = st.form_submit_button("Update Role")
+
+    if submit_role_update:
+        if not confirm_update:
+            st.warning("Please confirm the role update before proceeding.")
+        else:
+            success, msg = update_user_role(selected_user, new_role)
+            if success:
+                st.success(msg)
+                st.rerun()
+            else:
+                st.error(msg)
+
+    st.markdown("##### Delete User")
+    with st.form("admin_delete_user"):
+        user_to_delete = st.selectbox("Choose user to delete", usernames, key="delete_user_select")
+        confirm_delete = st.checkbox("Yes, delete this user")
+        submit_delete = st.form_submit_button("Delete User")
+
+    if submit_delete:
+        if not confirm_delete:
+            st.warning("Please confirm deletion before proceeding.")
+        else:
+            success, msg = delete_user(user_to_delete)
+            if success:
+                st.success(msg)
+                if user_to_delete == st.session_state.username:
+                    st.info("Your account was deleted. Please log in again with a different user.")
+                    st.session_state.logged_in = False
+                    st.session_state.username = ""
+                    st.session_state.role = ""
+                    st.session_state.selected_domain = None
+                st.rerun()
+            else:
+                st.error(msg)
+
+    st.markdown("##### Reset User Password")
+    with st.form("admin_reset_password"):
+        reset_user = st.selectbox("Select user to reset", usernames, key="reset_user_select")
+        temp_password = st.text_input("Temporary password", type="password")
+        confirm_temp = st.text_input("Confirm temporary password", type="password")
+        confirm_reset = st.checkbox("Yes, reset this password")
+        submit_reset = st.form_submit_button("Reset Password")
+
+    if submit_reset:
+        if not confirm_reset:
+            st.warning("Please confirm the password reset before proceeding.")
+        elif not temp_password or not confirm_temp:
+            st.warning("Please enter and confirm the temporary password.")
+        elif temp_password != confirm_temp:
+            st.error("Temporary passwords do not match.")
+        else:
+            is_valid, validation_message = validate_password(temp_password)
+            if not is_valid:
+                st.error(validation_message)
+            else:
+                success, msg = change_password(reset_user, "", temp_password, force=True)
+                if success:
+                    st.success(msg)
+                    st.rerun()
+                else:
+                    st.error(msg)

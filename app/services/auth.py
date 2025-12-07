@@ -4,6 +4,8 @@ import time
 import secrets
 from pathlib import Path
 
+from app.data.db import connect_database
+
 #Variables to store file paths
 DATA_DIR = Path("DATA")
 DATA_DIR.mkdir(parents=True, exist_ok=True)
@@ -60,6 +62,19 @@ def register_user(username, password, role):
     #Store username, hashed password and role in file
     with open(USER_DATA_FILE, "a") as f:
         f.write(f"{username},{hashed_password},{role}\n")
+
+    #Mirror user into database so admin panel stays in sync
+    try:
+        conn = connect_database()
+        cursor = conn.cursor()
+        cursor.execute(
+            "INSERT INTO users (username, password_hash, role) VALUES (?, ?, ?)",
+            (username, hashed_password, role)
+        )
+        conn.commit()
+        conn.close()
+    except Exception:
+        pass
 
     #Return True and success message
     return True, f"Username '{username}' registered successfully as {role}!"

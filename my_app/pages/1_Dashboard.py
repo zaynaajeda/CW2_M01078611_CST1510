@@ -40,6 +40,9 @@ from app.data.tickets import (
 
 from my_app.components.sidebar import logout_section
 
+#Retrieve role of user from session state
+role_user = st.session_state.role
+
 #Webpage title and icon
 st.set_page_config(page_title="Dashboard", page_icon="📊", layout="wide")
 
@@ -52,13 +55,12 @@ if "username" not in st.session_state:
     #Initialise username
     st.session_state.username = ""
 
-#Track the currently selected domain so other pages can reuse it
 if "selected_domain" not in st.session_state:
     st.session_state.selected_domain = None
 
-#Ensure previous threats are initialised
-if "previous_threats" not in st.session_state:
-    st.session_state.previous_threats = None
+if "role" not in st.session_state:
+    #Initialise role
+    st.session_state.role = ""
 
 # Check if user is logged in
 if not st.session_state.logged_in:

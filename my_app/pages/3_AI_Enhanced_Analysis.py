@@ -47,6 +47,9 @@ sys.path.append(ROOT_DIR)
 #Initialise OpenAI client
 client = OpenAI(api_key=st.secrets["OPENAI_API_KEY"])
 
+#Retrieve role of user from session state
+role_user = st.session_state.role
+
 #Webpage title and icon
 st.set_page_config(page_title="AI-Enhanced Analysis", page_icon="🧠", layout="wide")
 
@@ -62,6 +65,10 @@ if "selected_domain" not in st.session_state:
 if "chart_ai_analysis" not in st.session_state:
     #Initialise AI response
     st.session_state.chart_ai_analysis = {}
+
+if "role" not in st.session_state:
+    #Initialise role
+    st.session_state.role = ""
 
 # Check if user is logged in
 if not st.session_state.logged_in:

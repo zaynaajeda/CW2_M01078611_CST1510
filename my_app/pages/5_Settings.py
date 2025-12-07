@@ -22,6 +22,9 @@ from app.data.users import (get_all_users,
 #Webpage title and icon
 st.set_page_config(page_title="Settings", page_icon="⚙️", layout="wide")
 
+#Retrieve role of user from session state
+role_user = st.session_state.role
+
 #Ensure session state variables are initialised
 if "logged_in" not in st.session_state:
     #Initialise login status

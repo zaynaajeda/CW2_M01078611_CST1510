@@ -49,10 +49,6 @@ if "selected_domain" not in st.session_state:
     #Track the domain chosen on the dashboard
     st.session_state.selected_domain = None
 
-if "role" not in st.session_state:
-    #Initialise role
-    st.session_state.role = ""
-
 # Check if user is logged in
 if not st.session_state.logged_in:
     st.error("You must be logged in to view analytics.")
@@ -71,9 +67,6 @@ st.title("Analytics")
 
 #Retrieve domain from session state
 domain = st.session_state.selected_domain
-
-#Retrieve role of user from session state
-role_user = st.session_state.role
 
 #Verify if user selected a domain
 if not domain:

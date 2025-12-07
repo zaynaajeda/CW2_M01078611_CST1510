@@ -128,153 +128,161 @@ if submitted:
                 st.error(message)
 
 st.divider()
-st.markdown("#### User Management")
+st.markdown("#### Users Management")
 
-st.markdown("##### Overview of Users")
+#Ensure that this section is only available to admins
+if role_user == "admin":
 
-#Fetch all users from database
-users = get_all_users()
+    st.markdown("##### Overview of Users")
 
-#Store all usernames in variable
-usernames = sorted({user["username"] for user in users})
+    #Fetch all users from database
+    users = get_all_users()
 
-#Verify if database users exists
-if not users:
-    #Inform user
-    st.info("No registered users found.")
-else:
-    #Display users in a table
-    st.dataframe(users, use_container_width=True)
+    #Store all usernames in variable
+    usernames = sorted({user["username"] for user in users})
 
-    st.markdown("##### Update User Role")
+    #Verify if database users exists
+    if not users:
+        #Inform user
+        st.info("No registered users found.")
+    else:
+        #Display users in a table
+        st.dataframe(users, use_container_width=True)
 
-    #Form to change role of user
-    with st.form("admin_update_role"):
-        #Prompt user to select username and new role
-        selected_user = st.selectbox("Select user", usernames)
-        new_role = st.selectbox("New role", valid_roles)
+        st.markdown("##### Update User Role")
 
-        #Checkbox to confirm role update
-        confirm_update = st.checkbox("Yes, update this user's role")
+        #Form to change role of user
+        with st.form("admin_update_role"):
+            #Prompt user to select username and new role
+            selected_user = st.selectbox("Select user", usernames)
+            new_role = st.selectbox("New role", valid_roles)
 
-        #Submit button for form
-        submit_role_update = st.form_submit_button("Update Role")
+            #Checkbox to confirm role update
+            confirm_update = st.checkbox("Yes, update this user's role")
 
-    #Verify if form is submitted
-    if submit_role_update:
-        #Verify is checkbox is ticked
-        if not confirm_update:
-            #Inform user to tick checkbox
-            st.warning("Please confirm the role update before proceeding.")
-        else:
-            #Proceed with update of role
-            success, msg = update_user_role(selected_user, new_role)
+            #Submit button for form
+            submit_role_update = st.form_submit_button("Update Role")
 
-            #Check boolean value of success
-            if success:
-                #Inform user about update of role
-                st.success(msg)
-                #Pause program for 1s
-                time.sleep(1)
-                #Rerun whole program
-                st.rerun()
+        #Verify if form is submitted
+        if submit_role_update:
+            #Verify is checkbox is ticked
+            if not confirm_update:
+                #Inform user to tick checkbox
+                st.warning("Please confirm the role update before proceeding.")
             else:
-                #Error message
-                st.error(msg)
-
-    st.markdown("##### Delete User")
-    #Form to delete user
-    with st.form("admin_delete_user"):
-        #Prompt user to select username to delete
-        user_to_delete = st.selectbox("Choose user to delete", usernames, key="delete_user_select")
-
-        #Checkbox to confirm deletion
-        confirm_delete = st.checkbox("Yes, delete this user")
-
-        #Submit button for form
-        submit_delete = st.form_submit_button("Delete User")
-
-    #Verify if form is submitted
-    if submit_delete:
-        #Verify is checkbox is ticked
-        if not confirm_delete:
-            #Inform user to tick checkbox
-            st.warning("Please confirm deletion before proceeding.")
-        else:
-            #Proceed with deletion of user
-            success, msg = delete_user(user_to_delete)
-
-            #Check boolean value of success
-            if success:
-                #Inform user that username was deleted
-                st.success(msg)
-
-                #Verify if selected username corresponds to current login username
-                if user_to_delete == st.session_state.username:
-                    #Inform user that his account was deleted
-                    st.info("Your account was deleted. Please log in again with a different user.")
-
-                    #Reset session state variables
-                    st.session_state.logged_in = False
-                    st.session_state.username = ""
-                    st.session_state.role = ""
-                    st.session_state.selected_domain = None
-
-                #Pause program for 1s
-                time.sleep(1)
-                #Rerun whole program
-                st.rerun()
-            else:
-                #Error message
-                st.error(msg)
-
-    st.markdown("##### Reset User Password")
-
-    #Form to reset password
-    with st.form("admin_reset_password"):
-        #Prompt user to select username and enter new password
-        reset_user = st.selectbox("Choose user", usernames)
-        admin_new_password = st.text_input("New Password", type="password")
-        admin_confirm_password = st.text_input("Confirm New Password", type="password")
-
-        #Checkbox to confirm password reset
-        confirm_reset = st.checkbox("Yes, reset this user's password")
-
-        #Submit button for form
-        submit_reset = st.form_submit_button("Reset Password")
-
-    #Verify if form is submitted
-    if submit_reset:
-        #Verify is checkbox is ticked
-        if not confirm_reset:
-            #Inform user to tick checkbox
-            st.warning("Please confirm the password reset before proceeding.")
-        
-        #Verify if all fields were entered
-        elif not admin_new_password or not admin_confirm_password:
-            #Inform user to fill in all fields
-            st.warning("Please fill in the new password fields.")
-
-        #Verify if both passwords entered match
-        elif admin_new_password != admin_confirm_password:
-            #Inform user about passwords not matching
-            st.error("New passwords do not match.")
-        else:
-            #Perform validation on password
-            is_valid, validation_message = validate_password(admin_new_password)
-
-            #Check if password is valid
-            if not is_valid:
-                #Display error message
-                st.error(validation_message)
-            else:
-                #Proceed with reset of password
-                success, msg = reset_user_password(reset_user, admin_new_password)
+                #Proceed with update of role
+                success, msg = update_user_role(selected_user, new_role)
 
                 #Check boolean value of success
                 if success:
-                    #Inform user that password reset was successful
+                    #Inform user about update of role
                     st.success(msg)
+                    #Pause program for 1s
+                    time.sleep(1)
+                    #Rerun whole program
+                    st.rerun()
                 else:
                     #Error message
                     st.error(msg)
+
+        st.markdown("##### Delete User")
+        #Form to delete user
+        with st.form("admin_delete_user"):
+            #Prompt user to select username to delete
+            user_to_delete = st.selectbox("Choose user to delete", usernames, key="delete_user_select")
+
+            #Checkbox to confirm deletion
+            confirm_delete = st.checkbox("Yes, delete this user")
+
+            #Submit button for form
+            submit_delete = st.form_submit_button("Delete User")
+
+        #Verify if form is submitted
+        if submit_delete:
+            #Verify is checkbox is ticked
+            if not confirm_delete:
+                #Inform user to tick checkbox
+                st.warning("Please confirm deletion before proceeding.")
+            else:
+                #Proceed with deletion of user
+                success, msg = delete_user(user_to_delete)
+
+                #Check boolean value of success
+                if success:
+                    #Inform user that username was deleted
+                    st.success(msg)
+
+                    #Verify if selected username corresponds to current login username
+                    if user_to_delete == st.session_state.username:
+                        #Inform user that his account was deleted
+                        st.info("Your account was deleted. Please log in again with a different user.")
+
+                        #Reset session state variables
+                        st.session_state.logged_in = False
+                        st.session_state.username = ""
+                        st.session_state.role = ""
+                        st.session_state.selected_domain = None
+
+                    #Pause program for 1s
+                    time.sleep(1)
+                    #Rerun whole program
+                    st.rerun()
+                else:
+                    #Error message
+                    st.error(msg)
+
+        st.markdown("##### Reset User Password")
+
+        #Form to reset password
+        with st.form("admin_reset_password"):
+            #Prompt user to select username and enter new password
+            reset_user = st.selectbox("Choose user", usernames)
+            admin_new_password = st.text_input("New Password", type="password")
+            admin_confirm_password = st.text_input("Confirm New Password", type="password")
+
+            #Checkbox to confirm password reset
+            confirm_reset = st.checkbox("Yes, reset this user's password")
+
+            #Submit button for form
+            submit_reset = st.form_submit_button("Reset Password")
+
+        #Verify if form is submitted
+        if submit_reset:
+            #Verify is checkbox is ticked
+            if not confirm_reset:
+                #Inform user to tick checkbox
+                st.warning("Please confirm the password reset before proceeding.")
+            
+            #Verify if all fields were entered
+            elif not admin_new_password or not admin_confirm_password:
+                #Inform user to fill in all fields
+                st.warning("Please fill in the new password fields.")
+
+            #Verify if both passwords entered match
+            elif admin_new_password != admin_confirm_password:
+                #Inform user about passwords not matching
+                st.error("New passwords do not match.")
+            else:
+                #Perform validation on password
+                is_valid, validation_message = validate_password(admin_new_password)
+
+                #Check if password is valid
+                if not is_valid:
+                    #Display error message
+                    st.error(validation_message)
+                else:
+                    #Proceed with reset of password
+                    success, msg = reset_user_password(reset_user, admin_new_password)
+
+                    #Check boolean value of success
+                    if success:
+                        #Inform user that password reset was successful
+                        st.success(msg)
+                    else:
+                        #Error message
+                        st.error(msg)
+
+#If user is not admin(analyst/user)
+else:
+    #Inform user that he has to be admin to access this section
+    st.warning(f"You must be **admin** to have access to this section")

@@ -219,145 +219,155 @@ else:
 
 st.divider()
 
-#Verify if domain is cyber security
-if domain == "Cyber Security":
-    #Fetch incidents from database
-    incidents = get_all_incidents()
+st.markdown("### AI-Enhanced Analysis of Record")
+
+#Ensure that this section is only available to analysts and admins
+if role_user == "analyst" or role_user == "admin":
+
+    #Verify if domain is cyber security
+    if domain == "Cyber Security":
+        #Fetch incidents from database
+        incidents = get_all_incidents()
 
 
-    #In case selectbox is skipped, there is no creation of records
-    #Verify if function returned data
-    if incidents.empty == False:
-        #Convert dataframe to dictionaries
-        #Each inc becomes a dictionary
-        incident_records = incidents.to_dict(orient="records")
+        #In case selectbox is skipped, there is no creation of records
+        #Verify if function returned data
+        if incidents.empty == False:
+            #Convert dataframe to dictionaries
+            #Each inc becomes a dictionary
+            incident_records = incidents.to_dict(orient="records")
 
-        #   Make each incident into a format (ID: type - severity) so that user can get
-        #   more details about each incident for ai analysis
-        incident_options = [
-            f"{inc['id']} : {inc['incident_type']} - {inc['severity']} - {inc['status']}" 
-            for inc in incident_records]
+            #   Make each incident into a format (ID: type - severity) so that user can get
+            #   more details about each incident for ai analysis
+            incident_options = [
+                f"{inc['id']} : {inc['incident_type']} - {inc['severity']} - {inc['status']}" 
+                for inc in incident_records]
 
-        #Allow user to select incident by showing its ID, type and severity
-        selected_idx = st.selectbox(
-            "Select incident to analyse (ID : type - severity - status):",
-            options=range(len(incident_records)),
-            format_func=lambda i: incident_options[i],
-        )
+            #Allow user to select incident by showing its ID, type and severity
+            selected_idx = st.selectbox(
+                "Select incident to analyse (ID : type - severity - status):",
+                options=range(len(incident_records)),
+                format_func=lambda i: incident_options[i],
+            )
 
-        #Get incident selected from dropdown
-        record = incident_records[selected_idx]
+            #Get incident selected from dropdown
+            record = incident_records[selected_idx]
 
-        
-        # Display incident details
-        st.markdown("#### Overview of Incident Details")
-        st.write(f"**ID:** {record['id']}")
-        st.write(f"**Type:** {record['incident_type']}")
-        st.write(f"**Status:** {record['status']}")
-        st.write(f"**Severity:** {record['severity']}")
-        st.write(f"**Description:** {record['description']}")
+            
+            # Display incident details
+            st.markdown("#### Overview of Incident Details")
+            st.write(f"**ID:** {record['id']}")
+            st.write(f"**Type:** {record['incident_type']}")
+            st.write(f"**Status:** {record['status']}")
+            st.write(f"**Severity:** {record['severity']}")
+            st.write(f"**Description:** {record['description']}")
 
-        st.divider()
-
-
-#Verify if domain is data science
-if domain == "Data Science":
-    #Fetch datasets from database
-    datasets = get_all_datasets()
-
-    #Verify if function returned data
-    if datasets.empty == False:
-        #Convert dataframe to dictionaries
-        dataset_records = datasets.to_dict(orient="records")
-
-        #Format dataset options for dropdown
-        dataset_options = [
-            f"{ds['id']} : {ds['dataset_name']} - {ds['category']} - {ds['record_count']} rows - {ds['column_count']} coulmns"
-            for ds in dataset_records
-        ]
-
-        #Allow user to select dataset
-        selected_idx = st.selectbox(
-            "Select dataset to analyse (ID : name - category - rows - columns):",
-            options=range(len(dataset_records)),
-            format_func=lambda i: dataset_options[i],
-        )
-
-        #Get dataset selected from dropdown
-        record = dataset_records[selected_idx]
-
-        #Display dataset details
-        st.markdown("#### Overview of Dataset Details")
-        st.write(f"**ID:** {record['id']}")
-        st.write(f"**Name:** {record['dataset_name']}")
-        st.write(f"**Category:** {record['category']}")
-        st.write(f"**Source:** {record['source']}")
-        st.write(f"**Record Count:** {record['record_count']}")
-        st.write(f"**Column Count:** {record['column_count']}")
-        st.write(f"**File Size (MB):** {record['file_size_mb']}")
-        st.write(f"**Last Updated:** {record['last_updated']}")
-
-        st.divider()
+            st.divider()
 
 
-#Verify if domain is IT operations
-if domain == "IT Operations":
-    #Fetch tickets from database
-    tickets = get_all_tickets()
+    #Verify if domain is data science
+    if domain == "Data Science":
+        #Fetch datasets from database
+        datasets = get_all_datasets()
 
-    #Verify if any tickets exist
-    if tickets.empty == False:
-        #Convert dataframe to dictionaries
-        ticket_records = tickets.to_dict(orient="records")
+        #Verify if function returned data
+        if datasets.empty == False:
+            #Convert dataframe to dictionaries
+            dataset_records = datasets.to_dict(orient="records")
 
-        #Format ticket options for dropdown
-        ticket_options = [
-            f"{ticket['id']} : {ticket['subject']} - {ticket['priority']} - {ticket['status']}"
-            for ticket in ticket_records
-        ]
+            #Format dataset options for dropdown
+            dataset_options = [
+                f"{ds['id']} : {ds['dataset_name']} - {ds['category']} - {ds['record_count']} rows - {ds['column_count']} coulmns"
+                for ds in dataset_records
+            ]
 
-        #Allow user to select ticket
-        selected_idx = st.selectbox(
-            "Select ticket to analyse (ID: subject - priority - status):",
-            options=range(len(ticket_records)),
-            format_func=lambda i: ticket_options[i],
-        )
+            #Allow user to select dataset
+            selected_idx = st.selectbox(
+                "Select dataset to analyse (ID : name - category - rows - columns):",
+                options=range(len(dataset_records)),
+                format_func=lambda i: dataset_options[i],
+            )
 
-        #Get ticket selected from dropdown
-        record = ticket_records[selected_idx]
+            #Get dataset selected from dropdown
+            record = dataset_records[selected_idx]
 
-        #Display ticket details
-        st.markdown("#### Overview of Ticket Details")
-        st.write(f"**ID:** {record['id']}")
-        st.write(f"**Subject:** {record['subject']}")
-        st.write(f"**Priority:** {record['priority']}")
-        st.write(f"**Status:** {record['status']}")
-        st.write(f"**Category:** {record['category']}")
-        st.write(f"**Resolved Date:** {record['resolved_date']}")
-        st.write(f"**Assigned To:** {record['assigned_to']}")
-        st.write(f"**Description:** {record['description']}")
-        st.write(f"**Created Date:** {record['created_date']}")
+            #Display dataset details
+            st.markdown("#### Overview of Dataset Details")
+            st.write(f"**ID:** {record['id']}")
+            st.write(f"**Name:** {record['dataset_name']}")
+            st.write(f"**Category:** {record['category']}")
+            st.write(f"**Source:** {record['source']}")
+            st.write(f"**Record Count:** {record['record_count']}")
+            st.write(f"**Column Count:** {record['column_count']}")
+            st.write(f"**File Size (MB):** {record['file_size_mb']}")
+            st.write(f"**Last Updated:** {record['last_updated']}")
 
-        st.divider()
+            st.divider()
 
-st.markdown("#### AI-Enhanced Analysis of Record")
-#Button to enable AI analysis
-if st.button("Allow AI Analysis"):
 
-    with st.spinner("Generating AI analysis for selected record..."):
-        #Get message prompt about record details for AI analysis
-        prompt = get_ai_prompt(domain, record)
+    #Verify if domain is IT operations
+    if domain == "IT Operations":
+        #Fetch tickets from database
+        tickets = get_all_tickets()
 
-        #Send request to OpenAI
-        response = client.chat.completions.create(
-                    model = "gpt-4o",
-                    messages = [
-                        {"role":"system", "content":system_prompt},
-                        {"role":"user", "content":prompt}]
-                    )
+        #Verify if any tickets exist
+        if tickets.empty == False:
+            #Convert dataframe to dictionaries
+            ticket_records = tickets.to_dict(orient="records")
 
-        #Retrieve AI output
-        ai_response = response.choices[0].message.content
+            #Format ticket options for dropdown
+            ticket_options = [
+                f"{ticket['id']} : {ticket['subject']} - {ticket['priority']} - {ticket['status']}"
+                for ticket in ticket_records
+            ]
 
-    #Display AI analysis
-    st.write(ai_response)
+            #Allow user to select ticket
+            selected_idx = st.selectbox(
+                "Select ticket to analyse (ID: subject - priority - status):",
+                options=range(len(ticket_records)),
+                format_func=lambda i: ticket_options[i],
+            )
+
+            #Get ticket selected from dropdown
+            record = ticket_records[selected_idx]
+
+            #Display ticket details
+            st.markdown("#### Overview of Ticket Details")
+            st.write(f"**ID:** {record['id']}")
+            st.write(f"**Subject:** {record['subject']}")
+            st.write(f"**Priority:** {record['priority']}")
+            st.write(f"**Status:** {record['status']}")
+            st.write(f"**Category:** {record['category']}")
+            st.write(f"**Resolved Date:** {record['resolved_date']}")
+            st.write(f"**Assigned To:** {record['assigned_to']}")
+            st.write(f"**Description:** {record['description']}")
+            st.write(f"**Created Date:** {record['created_date']}")
+
+            st.divider()
+
+    st.markdown("#### AI Analysis")
+    #Button to enable AI analysis
+    if st.button("Allow AI Analysis"):
+
+        with st.spinner("Generating AI analysis for selected record..."):
+            #Get message prompt about record details for AI analysis
+            prompt = get_ai_prompt(domain, record)
+
+            #Send request to OpenAI
+            response = client.chat.completions.create(
+                        model = "gpt-4o",
+                        messages = [
+                            {"role":"system", "content":system_prompt},
+                            {"role":"user", "content":prompt}]
+                        )
+
+            #Retrieve AI output
+            ai_response = response.choices[0].message.content
+
+        #Display AI analysis
+        st.write(ai_response)
+
+#If user is not admin(analyst/user)
+else:
+    #Inform user that he has to be admin to access this section
+    st.warning(f"You must be **analyst** or **admin** to have access to this section")

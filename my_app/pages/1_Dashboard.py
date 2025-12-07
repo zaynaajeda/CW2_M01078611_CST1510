@@ -165,79 +165,121 @@ else:
         else:
             #Display incidents in a table
             st.dataframe(incidents, use_container_width = True)
-        
+    
         st.divider()
         st.markdown("#### Incidents Management")
-        st.markdown("##### Add New Incident")
 
-        #Form to add new incident
-        with st.form("new_incident"):
-            #Prompt user to enter incident details
-            incident_type = st.text_input("Incident Type")
-            severity = st.selectbox("Severity", ["Low", "Medium", "High", "Critical"])
-            status = st.selectbox("Status", ["Open", "In Progress", "Resolved", "Closed"])
-            date = st.date_input("Date Reported")
-            description = st.text_area("Description")
+        #Ensure that this section is only available to admins
+        if role_user == "admin":
 
-            #Checkbox to confirm new incident
-            confirm_add_incident = st.checkbox("Yes, add incident.")
-                
-            #Submit button for the form
-            submitted = st.form_submit_button("Add Incident")
+            st.markdown("##### Add New Incident")
 
-            #Verify if form is submitted
-            if submitted:
-                #Verify confirmation checkbox
-                if not confirm_add_incident:
-                    st.warning("Please confirm addition before proceeding.")
-                #Verify if all fields are filled
-                elif not incident_type or not description or not date or not severity or not status:
-                    #Inform user to fill all fields
-                    st.warning("Please fill in all fields.")
-                else:
-                    #Insert new incident into database
-                    insert_incident(
-                        date.strftime("%Y-%m-%d"),  #Convert date into year-month-day format
-                        incident_type,
-                        severity,
-                        status,
-                        description,
-                        reported_by=st.session_state.username)
+            #Form to add new incident
+            with st.form("new_incident"):
+                #Prompt user to enter incident details
+                incident_type = st.text_input("Incident Type")
+                severity = st.selectbox("Severity", ["Low", "Medium", "High", "Critical"])
+                status = st.selectbox("Status", ["Open", "In Progress", "Resolved", "Closed"])
+                date = st.date_input("Date Reported")
+                description = st.text_area("Description")
+
+                #Checkbox to confirm new incident
+                confirm_add_incident = st.checkbox("Yes, add incident.")
                     
-                    #Success message
-                    st.success("New incident added successfully.")
-                    #Pause program for 1s
-                    time.sleep(1)
-                    #Rerun whole script
-                    st.rerun()
+                #Submit button for the form
+                submitted = st.form_submit_button("Add Incident")
 
-        st.markdown("##### Delete Incident")
+                #Verify if form is submitted
+                if submitted:
+                    #Verify confirmation checkbox
+                    if not confirm_add_incident:
+                        st.warning("Please confirm addition before proceeding.")
+                    #Verify if all fields are filled
+                    elif not incident_type or not description or not date or not severity or not status:
+                        #Inform user to fill all fields
+                        st.warning("Please fill in all fields.")
+                    else:
+                        #Insert new incident into database
+                        insert_incident(
+                            date.strftime("%Y-%m-%d"),  #Convert date into year-month-day format
+                            incident_type,
+                            severity,
+                            status,
+                            description,
+                            reported_by=st.session_state.username)
+                        
+                        #Success message
+                        st.success("New incident added successfully.")
+                        #Pause program for 1s
+                        time.sleep(1)
+                        #Rerun whole script
+                        st.rerun()
 
-        #This prevents any error from table of incidents not being displayed
-        if incidents.empty:
-            st.info("No incidents available for deletion or updates yet.")
-        else:
-            #Form to delete incident
-            with st.form("delete_incident"):
-                #Prompt user to select incident ID
-                incident_id_delete = st.number_input("Incident ID", min_value = min_incident_id, max_value = max_incident_id)
-                
-                #Checkbox to confirm deletion of incident
-                confirm_delete_incident = st.checkbox("Yes, delete incident")
-                #Button for form
-                submit_delete_incident = st.form_submit_button("Delete Incident")
+            st.markdown("##### Delete Incident")
 
-            #verify if form is submitted
-            if submit_delete_incident:
-                #Verify if checkbox is ticked
-                if not confirm_delete_incident:
-                    #Inform user to tick checkbox
-                    st.warning("Please confirm deletion before proceeding.")
-                else:
-                    #Proceed with deletion of incident
-                    if delete_incident(int(incident_id_delete)):
-                        #Inform user that incident was deleted
-                        st.success(f"Incident of ID {incident_id_delete} deleted.")
+            #This prevents any error from table of incidents not being displayed
+            if incidents.empty:
+                st.info("No incidents available for deletion or updates yet.")
+            else:
+                #Form to delete incident
+                with st.form("delete_incident"):
+                    #Prompt user to select incident ID
+                    incident_id_delete = st.number_input("Incident ID", min_value = min_incident_id, max_value = max_incident_id)
+                    
+                    #Checkbox to confirm deletion of incident
+                    confirm_delete_incident = st.checkbox("Yes, delete incident")
+                    #Button for form
+                    submit_delete_incident = st.form_submit_button("Delete Incident")
+
+                #verify if form is submitted
+                if submit_delete_incident:
+                    #Verify if checkbox is ticked
+                    if not confirm_delete_incident:
+                        #Inform user to tick checkbox
+                        st.warning("Please confirm deletion before proceeding.")
+                    else:
+                        #Proceed with deletion of incident
+                        if delete_incident(int(incident_id_delete)):
+                            #Inform user that incident was deleted
+                            st.success(f"Incident of ID {incident_id_delete} deleted.")
+
+                            #Pause program for 1s
+                            time.sleep(1)
+                            #Rerun whole script
+                            st.rerun()
+                        else:
+                            #Error message
+                            st.error("No incident found with that ID.")
+
+                st.markdown("##### Update Incident")
+
+                #Form to update incident
+                with st.form("update_incident"):
+                    #Prompt user to select incident ID
+                    incident_id_update = st.number_input("Incident ID", min_value = min_incident_id, max_value = max_incident_id)
+                    
+                    #Prompt user to select new status of incident
+                    new_incident_status = st.selectbox("New Status", ["-- Select New Status --", "Open", "In Progress", "Resolved", "Closed"], key="update_status")
+                    confirm_update_incident = st.checkbox("Yes, update incident.")
+                    #Button to submit form
+                    submit_update = st.form_submit_button("Update Incident")
+
+                #Verify if form is submitted
+                if submit_update:
+                    #Verify confirmation checkbox
+                    if not confirm_update_incident:
+                        st.warning("Please confirm update before proceeding.")
+                    #Verify if new status is selected
+                    elif new_incident_status == "-- Select New Status --":
+                        #Warning message
+                        st.warning("Please select new status of incident.")
+                        #Stop whole execution of script
+                        st.stop()
+
+                    #Proceed with updating incident status
+                    if update_incident(conn, int(incident_id_update), new_incident_status):
+                        #Success message
+                        st.success(f"Incident of ID {incident_id_update} updated to {new_incident_status}.")
 
                         #Pause program for 1s
                         time.sleep(1)
@@ -246,44 +288,10 @@ else:
                     else:
                         #Error message
                         st.error("No incident found with that ID.")
-
-            st.markdown("##### Update Incident")
-
-            #Form to update incident
-            with st.form("update_incident"):
-                #Prompt user to select incident ID
-                incident_id_update = st.number_input("Incident ID", min_value = min_incident_id, max_value = max_incident_id)
-                
-                #Prompt user to select new status of incident
-                new_incident_status = st.selectbox("New Status", ["-- Select New Status --", "Open", "In Progress", "Resolved", "Closed"], key="update_status")
-                confirm_update_incident = st.checkbox("Yes, update incident.")
-                #Button to submit form
-                submit_update = st.form_submit_button("Update Incident")
-
-            #Verify if form is submitted
-            if submit_update:
-                #Verify confirmation checkbox
-                if not confirm_update_incident:
-                    st.warning("Please confirm update before proceeding.")
-                #Verify if new status is selected
-                elif new_incident_status == "-- Select New Status --":
-                    #Warning message
-                    st.warning("Please select new status of incident.")
-                    #Stop whole execution of script
-                    st.stop()
-
-                #Proceed with updating incident status
-                if update_incident(conn, int(incident_id_update), new_incident_status):
-                    #Success message
-                    st.success(f"Incident of ID {incident_id_update} updated to {new_incident_status}.")
-
-                    #Pause program for 1s
-                    time.sleep(1)
-                    #Rerun whole script
-                    st.rerun()
-                else:
-                    #Error message
-                    st.error("No incident found with that ID.")
+        #If user is not admin(analyst/user)
+        else:
+            #Inform user that he has to be admin to access this section
+            st.warning(f"You must be **admin** to have access to this section")
 
     #Verify if domain is Data Science
     if domain == "Data Science":
@@ -330,118 +338,126 @@ else:
         st.divider()
         st.markdown("#### Datasets Management")
 
-        st.markdown("##### Add New Dataset")
+        #Ensure that this section is only available to admins
+        if role_user == "admin":
 
-        #Form to add new dataset
-        with st.form("new_dataset"):
-            #Prompt user to enter dataset details
-            dataset_name = st.text_input("Dataset Name")
-            category = st.text_input("Category")
-            source = st.text_input("Source")
-            last_updated = st.date_input("Last Updated")
-            record_count = st.number_input("Record Count", min_value = 1000, step = 1000)
-            column_count = st.number_input("Column Count", min_value = 1, step = 1)
-            file_size = st.number_input("File Size (MB)", min_value = 0.1, step = 0.1)
-            confirm_add_dataset = st.checkbox("Yes, add dataset.")
+            st.markdown("##### Add New Dataset")
 
-            #Submit button for the form
-            dataset_submit = st.form_submit_button("Add Dataset")
+            #Form to add new dataset
+            with st.form("new_dataset"):
+                #Prompt user to enter dataset details
+                dataset_name = st.text_input("Dataset Name")
+                category = st.text_input("Category")
+                source = st.text_input("Source")
+                last_updated = st.date_input("Last Updated")
+                record_count = st.number_input("Record Count", min_value = 1000, step = 1000)
+                column_count = st.number_input("Column Count", min_value = 1, step = 1)
+                file_size = st.number_input("File Size (MB)", min_value = 0.1, step = 0.1)
+                confirm_add_dataset = st.checkbox("Yes, add dataset.")
 
-        #Verify if form is submitted
-        if dataset_submit:
-            #Verify confirmation checkbox
-            if not confirm_add_dataset:
-                st.warning("Please confirm addition before proceeding.")
-            #Verify if all fields are filled
-            elif not dataset_name or not category or not source or not last_updated:
-                #Inform user to fill all fields
-                st.warning("Please fill in all fields.")
-            else:
-                #Insert new dataset into database
-                insert_dataset(
-                        dataset_name,
-                        category,
-                        source,
-                        last_updated.strftime("%Y-%m-%d"),
-                        int(record_count),
-                        int(column_count),
-                        file_size)
-                
-                #Success message
-                st.success("New dataset added successfully.")
-
-                #Pause program for 1s
-                time.sleep(1)
-                #Rerun whole script
-                st.rerun()
-        
-        st.markdown("##### Delete Dataset")
-
-        #This prevents any error from table of datasets not being displayed
-        if datasets.empty:
-            st.info("No datasets available for deletion or updates yet.")
-        else:
-            #Form to delete dataset
-            with st.form("delete_dataset"):
-                #Prompt user to select dataset ID
-                dataset_id_delete = st.number_input("Dataset ID", min_value = min_dataset_id, max_value = max_dataset_id)
-
-                #Checkbox to confirm deletion of dataset
-                confirm_delete_dataset = st.checkbox("Yes, delete dataset.")
-                #Button for form
-                submit_delete_dataset = st.form_submit_button("Delete Dataset")
+                #Submit button for the form
+                dataset_submit = st.form_submit_button("Add Dataset")
 
             #Verify if form is submitted
-            if submit_delete_dataset:
-                #Verify if checkbox is ticked
-                if not confirm_delete_dataset:
-                    #Inform user to tick checkbox
-                    st.warning("Please confirm deletion before proceeding.")
+            if dataset_submit:
+                #Verify confirmation checkbox
+                if not confirm_add_dataset:
+                    st.warning("Please confirm addition before proceeding.")
+                #Verify if all fields are filled
+                elif not dataset_name or not category or not source or not last_updated:
+                    #Inform user to fill all fields
+                    st.warning("Please fill in all fields.")
                 else:
-                    #Proceed with deletion of dataset
-                    if delete_dataset(int(dataset_id_delete)):
-                        #Success message
-                        st.success(f"Dataset of ID {dataset_id_delete} deleted.")
+                    #Insert new dataset into database
+                    insert_dataset(
+                            dataset_name,
+                            category,
+                            source,
+                            last_updated.strftime("%Y-%m-%d"),
+                            int(record_count),
+                            int(column_count),
+                            file_size)
+                    
+                    #Success message
+                    st.success("New dataset added successfully.")
 
+                    #Pause program for 1s
+                    time.sleep(1)
+                    #Rerun whole script
+                    st.rerun()
+            
+            st.markdown("##### Delete Dataset")
+
+            #This prevents any error from table of datasets not being displayed
+            if datasets.empty:
+                st.info("No datasets available for deletion or updates yet.")
+            else:
+                #Form to delete dataset
+                with st.form("delete_dataset"):
+                    #Prompt user to select dataset ID
+                    dataset_id_delete = st.number_input("Dataset ID", min_value = min_dataset_id, max_value = max_dataset_id)
+
+                    #Checkbox to confirm deletion of dataset
+                    confirm_delete_dataset = st.checkbox("Yes, delete dataset.")
+                    #Button for form
+                    submit_delete_dataset = st.form_submit_button("Delete Dataset")
+
+                #Verify if form is submitted
+                if submit_delete_dataset:
+                    #Verify if checkbox is ticked
+                    if not confirm_delete_dataset:
+                        #Inform user to tick checkbox
+                        st.warning("Please confirm deletion before proceeding.")
+                    else:
+                        #Proceed with deletion of dataset
+                        if delete_dataset(int(dataset_id_delete)):
+                            #Success message
+                            st.success(f"Dataset of ID {dataset_id_delete} deleted.")
+
+                            #Pause program for 1s
+                            time.sleep(1)
+                            #Rerun whole script
+                            st.rerun()
+                        else:
+                            #Error message
+                            st.error("No dataset found with that ID")
+
+
+                st.markdown("##### Update Dataset")
+
+                #Form to update incident
+                with st.form("update_dataset"):
+                    #Prompt user to select dataset ID
+                    dataset_id_update = st.number_input("Dataset ID", min_value = min_dataset_id, max_value = max_dataset_id)
+                    
+                    #Prompt user to select new record count of dataset
+                    new_record_count = st.number_input("New Record Count", min_value = 1000, step = 1000)
+                    confirm_update_dataset = st.checkbox("Yes, update dataset.")
+                    
+                    #Button to submit form
+                    submit_dataset_update = st.form_submit_button("Update Dataset")
+
+                #verify if form is submitted
+                if submit_dataset_update:
+                    #Verify confirmation checkbox
+                    if not confirm_update_dataset:
+                        st.warning("Please confirm update before proceeding.")
+                    #Proceeds with updating record of dataset
+                    elif update_dataset_record(conn, int(dataset_id_update), int(new_record_count)):
+                        #Success message
+                        st.success(f"Dataset of ID {dataset_id_update} updated to {new_record_count} records.")
                         #Pause program for 1s
                         time.sleep(1)
                         #Rerun whole script
                         st.rerun()
                     else:
                         #Error message
-                        st.error("No dataset found with that ID")
-
-
-            st.markdown("##### Update Dataset")
-
-            #Form to update incident
-            with st.form("update_dataset"):
-                #Prompt user to select dataset ID
-                dataset_id_update = st.number_input("Dataset ID", min_value = min_dataset_id, max_value = max_dataset_id)
-                
-                #Prompt user to select new record count of dataset
-                new_record_count = st.number_input("New Record Count", min_value = 1000, step = 1000)
-                confirm_update_dataset = st.checkbox("Yes, update dataset.")
-                
-                #Button to submit form
-                submit_dataset_update = st.form_submit_button("Update Dataset")
-
-            #verify if form is submitted
-            if submit_dataset_update:
-                #Verify confirmation checkbox
-                if not confirm_update_dataset:
-                    st.warning("Please confirm update before proceeding.")
-                #Proceeds with updating record of dataset
-                elif update_dataset_record(conn, int(dataset_id_update), int(new_record_count)):
-                    #Success message
-                    st.success(f"Dataset of ID {dataset_id_update} updated to {new_record_count} records.")
-                    #Pause program for 1s
-                    time.sleep(1)
-                    #Rerun whole script
-                    st.rerun()
-                else:
-                    #Error message
-                    st.error("No dataset found with that ID.")
+                        st.error("No dataset found with that ID.")
+        
+        #If user is not admin(analyst/user)
+        else:
+            #Inform user that he has to be admin to access this section
+            st.warning(f"You must be **admin** to have access to this section")
 
     #Verify if domain is IT Operations
     if domain == "IT Operations":
@@ -488,130 +504,138 @@ else:
         st.divider()
         st.markdown("#### Tickets Management")
 
-        st.markdown("##### Add New Ticket")
+        #Ensure that this section is only available to admins
+        if role_user == "admin":
 
-        #Form to add new ticket
-        with st.form("new_ticket"):
-            #Prompt user to enter ticket details
-            ticket_subject = st.text_input("Ticket Subject")
-            ticket_category = st.text_input("Category")
-            assigned_to = st.text_input("Assigned To")
-            ticket_priority = st.selectbox("Priority", ["Low", "Medium", "High", "Critical"])
-            ticket_status = st.selectbox("Status", ["Open", "In Progress", "Waiting for User", "Resolved", "Closed"])
-            ticket_created_date = st.date_input("Created Date")
-            resolved_days = st.number_input("Days required to resolve", min_value=1, step=1)
-            ticket_description = st.text_area("Description")
-            confirm_add_ticket = st.checkbox("Yes, add ticket.")
+            st.markdown("##### Add New Ticket")
 
-            #Submit button for form
-            submit_ticket = st.form_submit_button("Add Ticket")
+            #Form to add new ticket
+            with st.form("new_ticket"):
+                #Prompt user to enter ticket details
+                ticket_subject = st.text_input("Ticket Subject")
+                ticket_category = st.text_input("Category")
+                assigned_to = st.text_input("Assigned To")
+                ticket_priority = st.selectbox("Priority", ["Low", "Medium", "High", "Critical"])
+                ticket_status = st.selectbox("Status", ["Open", "In Progress", "Waiting for User", "Resolved", "Closed"])
+                ticket_created_date = st.date_input("Created Date")
+                resolved_days = st.number_input("Days required to resolve", min_value=1, step=1)
+                ticket_description = st.text_area("Description")
+                confirm_add_ticket = st.checkbox("Yes, add ticket.")
 
-        #Verify if form is submitted
-        if submit_ticket:
-            #Verify confirmation checkbox
-            if not confirm_add_ticket:
-                st.warning("Please confirm addition before proceeding.")
-            #Verify is user has entered all fields
-            elif not ticket_subject or not ticket_category or not ticket_description or not assigned_to:
-                #Inform user to fill all fields
-                st.warning("Please fill in all fields.")
-            else:
-                #Convert resolved days into string
-                resolved_days = str(resolved_days)
-
-                #Insert new ticket into database
-                insert_ticket(
-                    ticket_priority,
-                    ticket_status,
-                    ticket_category,
-                    ticket_subject,
-                    ticket_description,
-                    ticket_created_date.strftime("%Y-%m-%d"),
-                    resolved_days,
-                    assigned_to)
-                
-                #Success message
-                st.success("New ticket added successfully.")
-
-                #Pause program for 1s
-                time.sleep(1)
-                #Rerun whole program
-                st.rerun()
-
-
-        st.markdown("##### Delete Ticket")
-
-        #This prevents any error from table of tickets not being displayed
-        if tickets.empty:
-            st.info("No tickets available for deletion or updates yet.")
-        else:
-            #Form to delete ticket
-            with st.form("delete_ticket"):
-                #Prompt user to select ticket ID
-                ticket_id_delete = st.number_input("Ticket ID", min_value = min_ticket_id, max_value = max_ticket_id)
-
-                #Checkbox to confirm deletion of ticket
-                confirm_delete_ticket = st.checkbox("Yes, delete ticket.")
-                #Button for form
-                submit_delete_ticket = st.form_submit_button("Delete Ticket")
+                #Submit button for form
+                submit_ticket = st.form_submit_button("Add Ticket")
 
             #Verify if form is submitted
-            if submit_delete_ticket:
-                #Verify if checkbox is ticked
-                if not confirm_delete_ticket:
-                    #Inform user to tick checkbox
-                    st.warning("Please confirm deletion before proceeding.")
+            if submit_ticket:
+                #Verify confirmation checkbox
+                if not confirm_add_ticket:
+                    st.warning("Please confirm addition before proceeding.")
+                #Verify is user has entered all fields
+                elif not ticket_subject or not ticket_category or not ticket_description or not assigned_to:
+                    #Inform user to fill all fields
+                    st.warning("Please fill in all fields.")
                 else:
-                    #Proceed with deletion of ticket
-                    if delete_ticket(int(ticket_id_delete)):
-                        #Inform user that ticket was deleted
-                        st.success(f"Ticket of ID {ticket_id_delete} deleted.")
+                    #Convert resolved days into string
+                    resolved_days = str(resolved_days)
+
+                    #Insert new ticket into database
+                    insert_ticket(
+                        ticket_priority,
+                        ticket_status,
+                        ticket_category,
+                        ticket_subject,
+                        ticket_description,
+                        ticket_created_date.strftime("%Y-%m-%d"),
+                        resolved_days,
+                        assigned_to)
+                    
+                    #Success message
+                    st.success("New ticket added successfully.")
+
+                    #Pause program for 1s
+                    time.sleep(1)
+                    #Rerun whole program
+                    st.rerun()
+
+
+            st.markdown("##### Delete Ticket")
+
+            #This prevents any error from table of tickets not being displayed
+            if tickets.empty:
+                st.info("No tickets available for deletion or updates yet.")
+            else:
+                #Form to delete ticket
+                with st.form("delete_ticket"):
+                    #Prompt user to select ticket ID
+                    ticket_id_delete = st.number_input("Ticket ID", min_value = min_ticket_id, max_value = max_ticket_id)
+
+                    #Checkbox to confirm deletion of ticket
+                    confirm_delete_ticket = st.checkbox("Yes, delete ticket.")
+                    #Button for form
+                    submit_delete_ticket = st.form_submit_button("Delete Ticket")
+
+                #Verify if form is submitted
+                if submit_delete_ticket:
+                    #Verify if checkbox is ticked
+                    if not confirm_delete_ticket:
+                        #Inform user to tick checkbox
+                        st.warning("Please confirm deletion before proceeding.")
+                    else:
+                        #Proceed with deletion of ticket
+                        if delete_ticket(int(ticket_id_delete)):
+                            #Inform user that ticket was deleted
+                            st.success(f"Ticket of ID {ticket_id_delete} deleted.")
+
+                            #Pause program for 1s
+                            time.sleep(1)
+                            #Rerun whole script
+                            st.rerun()
+                        else:
+                            #Error message
+                            st.error("No ticket found with that ID")
+
+
+                st.markdown("##### Update Ticket")
+
+                #Form to update ticket
+                with st.form("update_ticket"):
+                    #Prompt user to select ticket ID
+                    ticket_id_update = st.number_input("Incident ID", min_value = min_ticket_id, max_value = max_ticket_id)
+                    
+                    #Prompt user to select new status of ticket
+                    new_ticket_status = st.selectbox("New Status", ["-- Select New Status --", "Open", "In Progress", "Waiting for User", "Resolved", "Closed"], key="update_status")
+                    confirm_update_ticket = st.checkbox("Yes, update ticket.")
+                    #Button to submit form
+                    submit_ticket_update = st.form_submit_button("Update Ticket")
+
+                #Verify if form is submitted
+                if submit_ticket_update:
+                    #Verify confirmation checkbox
+                    if not confirm_update_ticket:
+                        st.warning("Please confirm update before proceeding.")
+                    #Verify if new status is selected
+                    elif new_ticket_status == "-- Select New Status --":
+                        #Warning message
+                        st.warning("Please select new status of ticket.")
+                        #Stop whole execution of script
+                        st.stop()
+
+                    #Proceed with updating ticket status
+                    if update_ticket(conn, int(ticket_id_update), new_ticket_status):
+                        #Success message
+                        st.success(f"Ticket of ID {ticket_id_update} updated to {new_ticket_status}.")
 
                         #Pause program for 1s
-                        time.sleep(1)
+                        time.sleep(1.2)
                         #Rerun whole script
                         st.rerun()
                     else:
                         #Error message
-                        st.error("No ticket found with that ID")
+                        st.error("No ticket found with that ID.")
+        #If user is not admin(analyst/user)
+        else:
+            #Inform user that he has to be admin to access this section
+            st.warning(f"You must be **admin** to have access to this section")
 
-
-            st.markdown("##### Update Ticket")
-
-            #Form to update ticket
-            with st.form("update_ticket"):
-                #Prompt user to select ticket ID
-                ticket_id_update = st.number_input("Incident ID", min_value = min_ticket_id, max_value = max_ticket_id)
-                
-                #Prompt user to select new status of ticket
-                new_ticket_status = st.selectbox("New Status", ["-- Select New Status --", "Open", "In Progress", "Waiting for User", "Resolved", "Closed"], key="update_status")
-                confirm_update_ticket = st.checkbox("Yes, update ticket.")
-                #Button to submit form
-                submit_ticket_update = st.form_submit_button("Update Ticket")
-
-            #Verify if form is submitted
-            if submit_ticket_update:
-                #Verify confirmation checkbox
-                if not confirm_update_ticket:
-                    st.warning("Please confirm update before proceeding.")
-                #Verify if new status is selected
-                elif new_ticket_status == "-- Select New Status --":
-                    #Warning message
-                    st.warning("Please select new status of ticket.")
-                    #Stop whole execution of script
-                    st.stop()
-
-                #Proceed with updating ticket status
-                if update_ticket(conn, int(ticket_id_update), new_ticket_status):
-                    #Success message
-                    st.success(f"Ticket of ID {ticket_id_update} updated to {new_ticket_status}.")
-
-                    #Pause program for 1s
-                    time.sleep(1.2)
-                    #Rerun whole script
-                    st.rerun()
-                else:
-                    #Error message
-                    st.error("No ticket found with that ID.")
-
+    #Save changes
     conn.commit()

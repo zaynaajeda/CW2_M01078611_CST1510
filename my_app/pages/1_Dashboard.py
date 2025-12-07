@@ -114,11 +114,11 @@ else:
     st.divider()
 
 
-        # Each domain is started by basic summarised metrics(Total incidents/datasets/tickets)
-        # followed by table showing details about each domain.
+    # Each domain is started by basic summarised metrics(Total incidents/datasets/tickets)
+    # followed by table showing details about each domain.
 
-        # CRUD Features of each domain is then displayed(Incidents/Datasets/Tickets management)
-        # whereby user can add/delete/update any incident/dataset/ticket depending on domain selected.
+    # CRUD Features of each domain is then displayed(Incidents/Datasets/Tickets management)
+    # whereby user can add/delete/update any incident/dataset/ticket depending on domain selected.
 
 
     #Verify if domain is Cyber Security

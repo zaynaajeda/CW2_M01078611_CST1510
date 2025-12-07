@@ -67,8 +67,8 @@ with tab_login:
     login_password = st.text_input("Password", type="password", key="login_password")
 
 
-        # The login tab requires user to fill in both his username and password.
-        # The program then reads all registered user in users.txt file and compares the password.
+    # The login tab requires user to fill in both his username and password.
+    # The program then reads all registered user in users.txt file and compares the password.
 
     #Login button
     if st.button("Login"):

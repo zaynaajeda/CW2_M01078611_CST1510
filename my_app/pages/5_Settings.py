@@ -9,16 +9,15 @@ import streamlit as st
 ROOT_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 sys.path.append(ROOT_DIR)
 
+#Import functions from other folders
 from app.data.db import connect_database
+from my_app.components.sidebar import logout_section
 from app.services.user_service import migrate_users_from_file
 from app.services.auth import validate_password, change_password, valid_roles, USER_DATA_FILE
-
 from app.data.users import (get_all_users,
                             update_user_role,
                             delete_user,
                             reset_user_password)
-
-from my_app.components.sidebar import logout_section
 
 #Webpage title and icon
 st.set_page_config(page_title="Settings", page_icon="⚙️", layout="wide")
@@ -53,9 +52,13 @@ if not st.session_state.logged_in:
 st.title("Settings")
 st.divider()
 
-#Keep users table/file in sync when Settings loads
+#Create database connection
 conn = connect_database()
+
+#Reload users table
 migrate_users_from_file(conn, Path("DATA/users.txt"))
+
+#Close database connection
 conn.close()
 
 

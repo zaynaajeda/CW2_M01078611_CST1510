@@ -7,27 +7,39 @@ from app.data.users import get_user_by_username, insert_user
 from app.data.schema import create_users_table
 from app.services.auth import USER_DATA_FILE
 
-
+#Function to ensure that users table and database corresponds
 def sync_user_to_file(username, password_hash, role):
-    """Ensure DATA/users.txt contains the supplied user entry."""
+    """Ensure DATA/users.txt contains user entry."""
     try:
+        #Read whole file
         with open(USER_DATA_FILE, "r") as f:
             lines = f.readlines()
+    
+    #In case file not found, empty dictionary is created
     except FileNotFoundError:
         lines = []
 
+    #Rewrite new line
     new_line = f"{username},{password_hash},{role}\n"
+    #Initialise a flag to know about update
     updated = False
 
+    #Iterate through each line
     for idx, line in enumerate(lines):
+        #Verify if line starts with 'username,'
         if line.startswith(f"{username},"):
+            #Add current line to dictionary
             lines[idx] = new_line
+            #Change flag to True
             updated = True
+            #Stop loop
             break
 
+    #Add line to dictionary if flag is still False
     if not updated:
         lines.append(new_line)
 
+    #Rewrite whole file
     with open(USER_DATA_FILE, "w") as f:
         f.writelines(lines)
 
@@ -45,6 +57,8 @@ def register_user(username, password, role="user"):
     Returns:
         tuple: (success: bool, message: str)
     """
+
+    #Create database connection and cursor object
     conn = connect_database()
     cursor = conn.cursor()
 

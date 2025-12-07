@@ -81,6 +81,7 @@ def main():
     df_tickets = get_all_tickets()
     print(f"Total tickets: {len(df_tickets)}")
 
+    #Close databse connection
     conn.close()
 if __name__ == "__main__":
     main()

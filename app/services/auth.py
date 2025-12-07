@@ -5,6 +5,7 @@ import secrets
 from pathlib import Path
 
 from app.data.db import connect_database
+from models.auth import User    #Import class User
 
 #Variables to store file paths
 DATA_DIR = Path("DATA")
@@ -125,8 +126,11 @@ def login_user(username, password):
 
                 #Check if username matches
                 if user == username:
-                    #Verify password
-                    if verify_password(password, hash_pass):
+                    #Create object/instance
+                    current_user = User(user, hash_pass)
+                      
+                    #Verify password using the method verify_password from class User
+                    if current_user.verify_password(password, hash_pass):
                         #Reset lockout status on successful login
                         manage_lockout_status(username, 'reset')
                         return True, role
@@ -198,8 +202,11 @@ def change_password(username, current_password, new_password):
         if hash_pass.startswith("b'") and hash_pass.endswith("'"):
             hash_pass = hash_pass[2:-1]
 
+        #Creates object/instance
+        current_user = User(user, hash_pass) 
+
         #Case when password does not match
-        if not verify_password(current_password, hash_pass):
+        if not current_user.verify_password(current_password, hash_pass):
             return False, "Current password is incorrect."
 
         #Change hashed password into new one

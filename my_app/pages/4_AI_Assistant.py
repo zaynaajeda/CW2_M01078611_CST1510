@@ -41,10 +41,12 @@ assistant_domain = st.selectbox("Choose AI Assistant", ["General", "Cyber Securi
 
 st.divider()
 
+#Prompt message for system is retrived from function based on domain selected
 system_prompt = get_system_prompt(assistant_domain)
 
 #Initialise session state for messages
 if "messages" not in st.session_state:
+    #Session state variable is initialised with content for system 
     st.session_state.messages = [
         {"role":"system", "content":system_prompt}
     ]
@@ -98,6 +100,7 @@ if user_input:
         #Finalise message display and store it
         message_placeholder.markdown(full_response)
 
+        #Answer of AI is also added to session state variable
         st.session_state.messages.append(
             {"role":"assistant", "content":full_response}
         )

@@ -79,6 +79,13 @@ if not domain:
     #Stop execution of the whole script
     st.stop()
 
+'''
+    Selected domain from dashboard is required to allow AI analysis for records(incidents/datasets/tickets).
+
+    The system prompt and user prompt used for each domain is also dependent on the selected domain.
+    (get_ai_prompt, get_system_prompt)
+'''
+
 #Inform user about domain selected
 st.info(f"Selected domain: **{domain}**")
 st.divider()
@@ -94,13 +101,16 @@ if domain == "Cyber Security":
     #Fetch incidents from database
     incidents = get_all_incidents()
 
+
+    #In case selectbox is skipped, there is no creation of records
     #Verify if function returned data
     if incidents.empty == False:
         #Convert dataframe to dictionaries
         #Each inc becomes a dictionary
         incident_records = incidents.to_dict(orient="records")
 
-        #Make each incident into a format (ID: type - severity)
+        #   Make each incident into a format (ID: type - severity) so that user can get
+        #   more details about each incident for ai analysis
         incident_options = [
             f"{inc['id']} : {inc['incident_type']} - {inc['severity']} - {inc['status']}" 
             for inc in incident_records]
@@ -127,6 +137,7 @@ if domain == "Cyber Security":
         st.divider()
 
         #Button to enable AI analysis
+        #Upon clicking, the chosen incident with appropriate prompts are sent into messages of AI
         if st.button("Allow AI Analysis", key="cyber-ai-analysis"):
 
             st.divider()

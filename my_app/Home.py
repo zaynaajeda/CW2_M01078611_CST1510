@@ -66,6 +66,10 @@ with tab_login:
     login_username = st.text_input("Username", key="login_username")
     login_password = st.text_input("Password", type="password", key="login_password")
 
+
+        # The login tab requires user to fill in both his username and password.
+        # The program then reads all registered user in users.txt file and compares the password.
+
     #Login button
     if st.button("Login"):
         #Verify if fields are filled
@@ -94,8 +98,19 @@ with tab_login:
                 #Error message for login failure
                 st.error(role_user or "Invalid username or password.")
 
+
 #Register Tab
 with tab_register:
+
+
+            # The registration requires user to choose a username, role, password.
+
+            # After writing of the credentials, the program validates the username and password to see if
+            # they are in required format. 
+            # The password strength is also checked.
+            # Both passwords are compared to see if they match.
+
+
     #Subheading
     st.subheader("Create a new account")
 

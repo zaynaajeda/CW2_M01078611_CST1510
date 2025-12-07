@@ -41,13 +41,14 @@ def get_system_prompt(domain):
                         - Communicate clearly for support engineers and stakeholders
                         """
     else:
-        #Basic system prompt
+        #Basic system prompt(unsupported domain)
         system_prompt = "You are a helpful assistant."
 
     #Prompt message is returned
     return system_prompt
 
 #Function that returns prompt for inguiry(incident/dataset/ticket) in a certain domain
+#Based on the domain selected from dashboard, the appropriate prompt retrieves insights about its corresponding inquiry
 def get_ai_prompt(domain, inquiry):
     #Prompt for incident in cyber security domain
     if domain == "Cyber Security":
@@ -113,7 +114,7 @@ def get_ai_prompt(domain, inquiry):
                 -Description: {inquiry['description']}
             """
     else:
-        #General prompt on provided inquiry
+        #General prompt on provided inquiry(unsupported domain)
         prompt = "Provide an expert analysis based on the supplied information."
 
     #Prompt message is returned

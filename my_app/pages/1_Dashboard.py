@@ -113,6 +113,14 @@ else:
     st.info(f"Selected domain: **{domain}**")
     st.divider()
 
+
+        # Each domain is started by basic summarised metrics(Total incidents/datasets/tickets)
+        # followed by table showing details about each domain.
+
+        # CRUD Features of each domain is then displayed(Incidents/Datasets/Tickets management)
+        # whereby user can add/delete/update any incident/dataset/ticket depending on domain selected.
+
+
     #Verify if domain is Cyber Security
     if domain == "Cyber Security":
 
@@ -154,7 +162,7 @@ else:
             st.info("No incidents recorded yet. Add a new one below.")
         else:
             st.dataframe(incidents, use_container_width = True)
-
+        
         st.divider()
         st.markdown("#### Incidents Management")
         st.markdown("##### Add New Incident")
@@ -196,6 +204,7 @@ else:
 
         st.markdown("##### Delete Incident")
 
+        #This prevents any error from table of incidents not being displayed
         if incidents.empty:
             st.info("No incidents available for deletion or updates yet.")
         else:
@@ -351,6 +360,7 @@ else:
         
         st.markdown("##### Delete Dataset")
 
+        #This prevents any error from table of datasets not being displayed
         if datasets.empty:
             st.info("No datasets available for deletion or updates yet.")
         else:
@@ -506,6 +516,7 @@ else:
 
         st.markdown("##### Delete Ticket")
 
+        #This prevents any error from table of tickets not being displayed
         if tickets.empty:
             st.info("No tickets available for deletion or updates yet.")
         else:

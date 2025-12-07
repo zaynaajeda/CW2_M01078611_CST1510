@@ -121,6 +121,7 @@ if submitted:
 st.divider()
 st.markdown("#### User Management")
 
+st.markdown("##### Overview of Users")
 users = get_all_users()
 
 if not users:
@@ -169,30 +170,3 @@ else:
                 st.rerun()
             else:
                 st.error(msg)
-
-    st.markdown("##### Reset User Password")
-    with st.form("admin_reset_password"):
-        reset_user = st.selectbox("Select user to reset", usernames, key="reset_user_select")
-        temp_password = st.text_input("Temporary password", type="password")
-        confirm_temp = st.text_input("Confirm temporary password", type="password")
-        confirm_reset = st.checkbox("Yes, reset this password")
-        submit_reset = st.form_submit_button("Reset Password")
-
-    if submit_reset:
-        if not confirm_reset:
-            st.warning("Please confirm the password reset before proceeding.")
-        elif not temp_password or not confirm_temp:
-            st.warning("Please enter and confirm the temporary password.")
-        elif temp_password != confirm_temp:
-            st.error("Temporary passwords do not match.")
-        else:
-            is_valid, validation_message = validate_password(temp_password)
-            if not is_valid:
-                st.error(validation_message)
-            else:
-                success, msg = change_password(reset_user, "", temp_password, force=True)
-                if success:
-                    st.success(msg)
-                    st.rerun()
-                else:
-                    st.error(msg)

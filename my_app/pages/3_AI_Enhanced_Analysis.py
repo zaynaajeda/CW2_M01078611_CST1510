@@ -123,42 +123,19 @@ if domain == "Cyber Security":
         )
 
         #Get incident selected from dropdown
-        incident = incident_records[selected_idx]
+        record = incident_records[selected_idx]
 
         
         # Display incident details
         st.markdown("#### Overview of Incident Details")
-        st.write(f"**ID:** {incident['id']}")
-        st.write(f"**Type:** {incident['incident_type']}")
-        st.write(f"**Status:** {incident['status']}")
-        st.write(f"**Severity:** {incident['severity']}")
-        st.write(f"**Description:** {incident['description']}")
+        st.write(f"**ID:** {record['id']}")
+        st.write(f"**Type:** {record['incident_type']}")
+        st.write(f"**Status:** {record['status']}")
+        st.write(f"**Severity:** {record['severity']}")
+        st.write(f"**Description:** {record['description']}")
 
         st.divider()
 
-        #Button to enable AI analysis
-        #Upon clicking, the chosen incident with appropriate prompts are sent into messages of AI
-        if st.button("Allow AI Analysis", key="cyber-ai-analysis"):
-
-            st.divider()
-
-            #Get message prompt about incident details for AI analysis
-            prompt = get_ai_prompt(domain, incident)
-
-            #Send request to OpenAI
-            response = client.chat.completions.create(
-                model = "gpt-4o",
-                messages = [
-                    {"role":"system", "content":system_prompt},
-                    {"role":"user", "content":prompt}]
-                )
-            
-            #Retrieve AI output
-            ai_response = response.choices[0].message.content
-
-            #Display AI analysis
-            st.markdown("#### AI-Enhanced Analysis")
-            st.write(ai_response)
 
 #Verify if domain is data science
 if domain == "Data Science":
@@ -184,47 +161,21 @@ if domain == "Data Science":
         )
 
         #Get dataset selected from dropdown
-        dataset = dataset_records[selected_idx]
+        record = dataset_records[selected_idx]
 
         #Display dataset details
         st.markdown("#### Overview of Dataset Details")
-        st.write(f"**ID:** {dataset['id']}")
-        st.write(f"**Name:** {dataset['dataset_name']}")
-        st.write(f"**Category:** {dataset['category']}")
-        st.write(f"**Source:** {dataset['source']}")
-        st.write(f"**Record Count:** {dataset['record_count']}")
-        st.write(f"**Column Count:** {dataset['column_count']}")
-        st.write(f"**File Size (MB):** {dataset['file_size_mb']}")
-        st.write(f"**Last Updated:** {dataset['last_updated']}")
+        st.write(f"**ID:** {record['id']}")
+        st.write(f"**Name:** {record['dataset_name']}")
+        st.write(f"**Category:** {record['category']}")
+        st.write(f"**Source:** {record['source']}")
+        st.write(f"**Record Count:** {record['record_count']}")
+        st.write(f"**Column Count:** {record['column_count']}")
+        st.write(f"**File Size (MB):** {record['file_size_mb']}")
+        st.write(f"**Last Updated:** {record['last_updated']}")
 
         st.divider()
 
-        #Button to enable AI analysis
-        if st.button("Allow AI Analysis", key="data-science-ai-analysis"):
-
-            st.divider()
-
-            #Get message prompt about dataset details for AI analysis
-            prompt = get_ai_prompt(domain, dataset)
-
-            #Send request to OpenAI
-            response = client.chat.completions.create(
-                model = "gpt-4o",
-                messages = [
-                    {"role":"system", "content":system_prompt},
-                    {"role":"user", "content":prompt}]
-                )
-
-            #Retrieve AI output
-            ai_response = response.choices[0].message.content
-
-            #Display AI analysis
-            st.markdown("#### AI-Enhanced Analysis")
-            st.write(ai_response)
-
-    else:
-        #Inform user that no datasets are available
-        st.info("No datasets available for analysis.")
 
 #Verify if domain is IT operations
 if domain == "IT Operations":
@@ -250,45 +201,45 @@ if domain == "IT Operations":
         )
 
         #Get ticket selected from dropdown
-        ticket = ticket_records[selected_idx]
+        record = ticket_records[selected_idx]
 
         #Display ticket details
         st.markdown("#### Overview of Ticket Details")
-        st.write(f"**ID:** {ticket['id']}")
-        st.write(f"**Subject:** {ticket['subject']}")
-        st.write(f"**Priority:** {ticket['priority']}")
-        st.write(f"**Status:** {ticket['status']}")
-        st.write(f"**Category:** {ticket['category']}")
-        st.write(f"**Resolved Date:** {ticket['resolved_date']}")
-        st.write(f"**Assigned To:** {ticket['assigned_to']}")
-        st.write(f"**Description:** {ticket['description']}")
-        st.write(f"**Created Date:** {ticket['created_date']}")
+        st.write(f"**ID:** {record['id']}")
+        st.write(f"**Subject:** {record['subject']}")
+        st.write(f"**Priority:** {record['priority']}")
+        st.write(f"**Status:** {record['status']}")
+        st.write(f"**Category:** {record['category']}")
+        st.write(f"**Resolved Date:** {record['resolved_date']}")
+        st.write(f"**Assigned To:** {record['assigned_to']}")
+        st.write(f"**Description:** {record['description']}")
+        st.write(f"**Created Date:** {record['created_date']}")
 
         st.divider()
 
-        #Button to enable AI analysis
-        if st.button("Allow AI Analysis", key="it-ops-ai-analysis"):
+#Button to enable AI analysis
+if st.button("Allow AI Analysis"):
 
-            st.divider()
+    st.divider()
 
-            #Get message prompt about ticket details for AI analysis
-            prompt = get_ai_prompt(domain, ticket)
+    #Get message prompt about record details for AI analysis
+    prompt = get_ai_prompt(domain, record)
 
-            #Send request to OpenAI
-            response = client.chat.completions.create(
+    #Send request to OpenAI
+    response = client.chat.completions.create(
                 model = "gpt-4o",
                 messages = [
                     {"role":"system", "content":system_prompt},
                     {"role":"user", "content":prompt}]
                 )
 
-            #Retrieve AI output
-            ai_response = response.choices[0].message.content
+    #Retrieve AI output
+    ai_response = response.choices[0].message.content
 
-            #Display AI analysis
-            st.markdown("#### AI-Enhanced Analysis")
-            st.write(ai_response)
+     #Display AI analysis
+    st.markdown("#### AI-Enhanced Analysis of Record")
+    st.write(ai_response)
 
-    else:
-        #Inform user that no tickets are available
-        st.info("No tickets available for analysis.")
+else:
+    #Inform user that no tickets are available
+    st.info("No record available for analysis.")

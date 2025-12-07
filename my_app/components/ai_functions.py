@@ -119,3 +119,11 @@ def get_ai_prompt(domain, inquiry):
 
     #Prompt message is returned
     return prompt
+
+def get_chart_prompt(domain, insights):
+    chart_prompt = f"""
+                Review the following {domain} dashboard chart data and provide a concise analysis 
+                covering notable trends, anomalies, and recommended actions.
+                Chart data:{insights}               
+                """
+    return chart_prompt

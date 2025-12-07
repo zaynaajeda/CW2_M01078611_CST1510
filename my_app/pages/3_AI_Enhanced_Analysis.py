@@ -1,16 +1,35 @@
 import streamlit as st
 from openai import OpenAI
-import sys
 import os
+import sys
 
 #Import all incidents from database
-from app.data.incidents import get_all_incidents  
+from app.data.incidents import (
+    get_all_incidents,
+    get_incidents_by_severity,
+    get_incidents_by_status,
+    get_incidents_by_type_count,
+    get_incidents_over_time,
+)
 
 #Import all datasets from database
-from app.data.datasets import get_all_datasets
+from app.data.datasets import (
+    get_all_datasets,
+    get_dataset_column_counts,
+    get_dataset_record_counts,
+    get_datasets_by_category,
+    get_datasets_by_source,
+    get_datasets_over_time,
+)
 
 #Import all tickets from database
-from app.data.tickets import get_all_tickets
+from app.data.tickets import (
+    get_all_tickets,
+    get_tickets_by_assigned_to,
+    get_tickets_by_priority,
+    get_tickets_by_status_count,
+    get_tickets_over_time,
+)
 
 #Import database connection function
 from app.data.db import connect_database
@@ -19,7 +38,7 @@ from app.data.db import connect_database
 from my_app.components.sidebar import logout_section
 
 #Import system prompt generation for a specific domain
-from my_app.components.ai_functions import get_ai_prompt, get_system_prompt
+from my_app.components.ai_functions import get_ai_prompt, get_chart_prompt, get_system_prompt
 
 #Adjust path to main project directory
 ROOT_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -39,6 +58,10 @@ if "logged_in" not in st.session_state:
 if "selected_domain" not in st.session_state:
     #Track the domain chosen on the dashboard
     st.session_state.selected_domain = None
+
+if "chart_ai_analysis" not in st.session_state:
+    #Initialise AI response
+    st.session_state.chart_ai_analysis = {}
 
 # Check if user is logged in
 if not st.session_state.logged_in:
@@ -98,7 +121,101 @@ conn = connect_database()
 
 st.markdown("#### AI Analysis of Charts")
 
+#Store chart data for selected domain from dashboard
+domain_insights = {}
 
+#Verify if domain is cyber security
+if domain == "Cyber Security":
+    #Create dictionary to store all records in cyber security
+    #Each key contains a dashboard chart with its data as its value
+    charts = {
+        "incidents_over_time": get_incidents_over_time(conn),
+        "incidents_by_type": get_incidents_by_type_count(conn),
+        "incidents_by_status": get_incidents_by_status(conn),
+        "incidents_by_severity": get_incidents_by_severity(conn)}
+
+    #Iterate through dictionary charts
+    #name represents key and df the value(dataframe)
+    for name, df in charts.items():
+        #Skip empty any dataframe
+        if df is None or df.empty:
+            continue
+
+        #Convert dataframe to list of dictionaries
+        domain_insights[name] = df.to_dict(orient="records")
+
+#Verify if domain is data science
+elif domain == "Data Science":
+    #Create dictionaries to store all records in data science
+    #Each key contains a dashboard chart with its data as its value as dataframe    
+    charts = {
+        "datasets_over_time": get_datasets_over_time(conn),
+        "dataset_record_counts": get_dataset_record_counts(conn),
+        "dataset_column_counts": get_dataset_column_counts(conn),
+        "datasets_by_category": get_datasets_by_category(conn),
+        "datasets_by_source": get_datasets_by_source(conn)}
+
+    #Iterate through dictionary charts
+    #name represents key and df the value(dataframe)
+    for name, df in charts.items():
+        #Skip empty any dataframe
+        if df is None or df.empty:
+            continue
+
+        #Convert dataframe to list of dictionaries
+        domain_insights[name] = df.to_dict(orient="records")
+
+#Verify if domain is it operations
+elif domain == "IT Operations":
+    #Create dictionary to store all records in it operations
+    #Each key contains a dashboard chart with its data as its value
+    charts = {
+        "tickets_over_time": get_tickets_over_time(conn),
+        "tickets_by_assigned_to": get_tickets_by_assigned_to(conn),
+        "tickets_by_priority": get_tickets_by_priority(conn),
+        "tickets_by_status": get_tickets_by_status_count(conn)}
+
+    #Iterate through dictionary charts
+    #name represents key and df the value(dataframe)
+    for name, df in charts.items():
+        #Skip empty any dataframe
+        if df is None or df.empty:
+            continue
+
+        #Convert dataframe to list of dictionaries
+        domain_insights[name] = df.to_dict(orient="records")
+
+#Close databse connection after all data has been retrieved
+conn.close()
+
+#Verify if chart data exists for AI analysis
+if not domain_insights:
+    #Inform user about unavailable chart data
+    st.info("No chart data available for AI analysis.")
+else:
+    #Create button to generate AI analysis of charts
+    if st.button("Generate AI Chart Analysis"):
+        #Inform user that data is loading
+        with st.spinner("Generating AI insights from dashboard charts..."):
+            #Retrieve message prompt for user for AI chat
+            chart_prompt = get_chart_prompt(domain, domain_insights)
+
+            #Send request to OpenAI
+            response = client.chat.completions.create(model="gpt-4o",
+                                                        messages=[
+                                                            {"role": "system", "content": system_prompt},
+                                                            {"role": "user", "content": chart_prompt}])
+
+            #Retrieve AI output
+            st.session_state.chart_ai_analysis[domain] = response.choices[0].message.content
+
+    #Use of variable to store response of AI
+    analysis_text = st.session_state.chart_ai_analysis.get(domain)
+
+    #Verify if response of AI exists
+    if analysis_text:
+        #Display AI analysis of selected dashboard charts
+        st.write(analysis_text)
 
 st.divider()
 
@@ -223,29 +340,24 @@ if domain == "IT Operations":
 
         st.divider()
 
+st.markdown("#### AI-Enhanced Analysis of Record")
 #Button to enable AI analysis
 if st.button("Allow AI Analysis"):
 
-    st.divider()
+    with st.spinner("Generating AI analysis for selected record..."):
+        #Get message prompt about record details for AI analysis
+        prompt = get_ai_prompt(domain, record)
 
-    #Get message prompt about record details for AI analysis
-    prompt = get_ai_prompt(domain, record)
+        #Send request to OpenAI
+        response = client.chat.completions.create(
+                    model = "gpt-4o",
+                    messages = [
+                        {"role":"system", "content":system_prompt},
+                        {"role":"user", "content":prompt}]
+                    )
 
-    #Send request to OpenAI
-    response = client.chat.completions.create(
-                model = "gpt-4o",
-                messages = [
-                    {"role":"system", "content":system_prompt},
-                    {"role":"user", "content":prompt}]
-                )
+        #Retrieve AI output
+        ai_response = response.choices[0].message.content
 
-    #Retrieve AI output
-    ai_response = response.choices[0].message.content
-
-     #Display AI analysis
-    st.markdown("#### AI-Enhanced Analysis of Record")
+    #Display AI analysis
     st.write(ai_response)
-
-else:
-    #Inform user that no tickets are available
-    st.info("No record available for analysis.")

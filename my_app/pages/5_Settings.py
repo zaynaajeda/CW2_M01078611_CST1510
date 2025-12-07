@@ -10,11 +10,12 @@ sys.path.append(ROOT_DIR)
 
 from app.data.db import connect_database
 from app.services.user_service import migrate_users_from_file
-from app.services.auth import validate_password, change_password, valid_roles
+from app.services.auth import validate_password, change_password, valid_roles, USER_DATA_FILE
 from app.data.users import (
     get_all_users,
     update_user_role,
-    delete_user)
+    delete_user,
+    reset_user_password)
 
 from my_app.components.sidebar import logout_section
 
@@ -123,6 +124,22 @@ st.markdown("#### User Management")
 
 st.markdown("##### Overview of Users")
 users = get_all_users()
+usernames = [user["username"] for user in users]
+
+file_usernames = []
+try:
+    with open(USER_DATA_FILE, "r") as f:
+        for line in f:
+            entry = line.strip()
+            if not entry:
+                continue
+            parts = entry.split(",", 2)
+            if parts:
+                file_usernames.append(parts[0])
+except FileNotFoundError:
+    pass
+
+available_usernames = sorted(set(usernames + file_usernames))
 
 if not users:
     st.info("No registered users found.")
@@ -131,7 +148,6 @@ else:
 
     st.markdown("##### Update User Role")
     with st.form("admin_update_role"):
-        usernames = [user["username"] for user in users]
         selected_user = st.selectbox("Select user", usernames)
         new_role = st.selectbox("New role", valid_roles)
         confirm_update = st.checkbox("Yes, update this user's role")
@@ -170,3 +186,32 @@ else:
                 st.rerun()
             else:
                 st.error(msg)
+
+st.markdown("##### Reset User Password")
+if not available_usernames:
+    st.info("No users available to reset.")
+else:
+    with st.form("admin_reset_password"):
+        reset_user = st.selectbox("Choose user", available_usernames)
+        admin_new_password = st.text_input("New Password", type="password")
+        admin_confirm_password = st.text_input("Confirm New Password", type="password")
+        confirm_reset = st.checkbox("Yes, reset this user's password")
+        submit_reset = st.form_submit_button("Reset Password")
+
+    if submit_reset:
+        if not confirm_reset:
+            st.warning("Please confirm the password reset before proceeding.")
+        elif not admin_new_password or not admin_confirm_password:
+            st.warning("Please fill in the new password fields.")
+        elif admin_new_password != admin_confirm_password:
+            st.error("New passwords do not match.")
+        else:
+            is_valid, validation_message = validate_password(admin_new_password)
+            if not is_valid:
+                st.error(validation_message)
+            else:
+                success, msg = reset_user_password(reset_user, admin_new_password)
+                if success:
+                    st.success(msg)
+                else:
+                    st.error(msg)

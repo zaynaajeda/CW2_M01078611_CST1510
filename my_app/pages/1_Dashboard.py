@@ -170,7 +170,7 @@ else:
         st.markdown("#### Incidents Management")
 
         #Ensure that this section is only available to admins
-        if role_user == "admin":
+        if role_user == "admin" or "analyst":
 
             st.markdown("##### Add New Incident")
 
@@ -259,7 +259,7 @@ else:
                     incident_id_update = st.number_input("Incident ID", min_value = min_incident_id, max_value = max_incident_id)
                     
                     #Prompt user to select new status of incident
-                    new_incident_status = st.selectbox("New Status", ["-- Select New Status --", "Open", "In Progress", "Resolved", "Closed"], key="update_status")
+                    new_incident_status = st.selectbox("New Status", ["-- Select New Status --", "Open", "In Progress", "Resolved", "Closed"], key="update_incident_status")
                     confirm_update_incident = st.checkbox("Yes, update incident.")
                     #Button to submit form
                     submit_update = st.form_submit_button("Update Incident")
@@ -291,7 +291,7 @@ else:
         #If user is not admin(analyst/user)
         else:
             #Inform user that he has to be admin to access this section
-            st.warning(f"You must be **admin** to have access to this section")
+            st.warning(f"You must be **analyst** or **admin** to have access to this section")
 
     #Verify if domain is Data Science
     if domain == "Data Science":
@@ -339,7 +339,7 @@ else:
         st.markdown("#### Datasets Management")
 
         #Ensure that this section is only available to admins
-        if role_user == "admin":
+        if role_user == "admin" or "analyst":
 
             st.markdown("##### Add New Dataset")
 
@@ -457,7 +457,7 @@ else:
         #If user is not admin(analyst/user)
         else:
             #Inform user that he has to be admin to access this section
-            st.warning(f"You must be **admin** to have access to this section")
+            st.warning(f"You must be **analyst** or **admin** to have access to this section")
 
     #Verify if domain is IT Operations
     if domain == "IT Operations":
@@ -505,7 +505,7 @@ else:
         st.markdown("#### Tickets Management")
 
         #Ensure that this section is only available to admins
-        if role_user == "admin":
+        if role_user == "admin" or "analyst":
 
             st.markdown("##### Add New Ticket")
 
@@ -603,7 +603,7 @@ else:
                     ticket_id_update = st.number_input("Incident ID", min_value = min_ticket_id, max_value = max_ticket_id)
                     
                     #Prompt user to select new status of ticket
-                    new_ticket_status = st.selectbox("New Status", ["-- Select New Status --", "Open", "In Progress", "Waiting for User", "Resolved", "Closed"], key="update_status")
+                    new_ticket_status = st.selectbox("New Status", ["-- Select New Status --", "Open", "In Progress", "Waiting for User", "Resolved", "Closed"], key="update_ticket_status")
                     confirm_update_ticket = st.checkbox("Yes, update ticket.")
                     #Button to submit form
                     submit_ticket_update = st.form_submit_button("Update Ticket")
@@ -635,7 +635,7 @@ else:
         #If user is not admin(analyst/user)
         else:
             #Inform user that he has to be admin to access this section
-            st.warning(f"You must be **admin** to have access to this section")
+            st.warning(f"You must be **analyst** or **admin** to have access to this section")
 
     #Save changes
     conn.commit()

@@ -80,10 +80,10 @@ if not domain:
     st.stop()
 
 
-    # Selected domain from dashboard is required to allow AI analysis for records(incidents/datasets/tickets).
+# Selected domain from dashboard is required to allow AI analysis for records(incidents/datasets/tickets).
 
-    # The system prompt and user prompt used for each domain is also dependent on the selected domain.
-    # (get_ai_prompt, get_system_prompt)
+# The system prompt and user prompt used for each domain is also dependent on the selected domain.
+# (get_ai_prompt, get_system_prompt)
 
 
 #Inform user about domain selected
@@ -95,6 +95,12 @@ system_prompt = get_system_prompt(domain)
 
 #Connect to database
 conn = connect_database()
+
+st.markdown("#### AI Analysis of Charts")
+
+
+
+st.divider()
 
 #Verify if domain is cyber security
 if domain == "Cyber Security":

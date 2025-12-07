@@ -1,9 +1,35 @@
 import sqlite3
 import bcrypt
 from pathlib import Path
+
 from app.data.db import connect_database
 from app.data.users import get_user_by_username, insert_user
 from app.data.schema import create_users_table
+from app.services.auth import USER_DATA_FILE
+
+
+def sync_user_to_file(username, password_hash, role):
+    """Ensure DATA/users.txt contains the supplied user entry."""
+    try:
+        with open(USER_DATA_FILE, "r") as f:
+            lines = f.readlines()
+    except FileNotFoundError:
+        lines = []
+
+    new_line = f"{username},{password_hash},{role}\n"
+    updated = False
+
+    for idx, line in enumerate(lines):
+        if line.startswith(f"{username},"):
+            lines[idx] = new_line
+            updated = True
+            break
+
+    if not updated:
+        lines.append(new_line)
+
+    with open(USER_DATA_FILE, "w") as f:
+        f.writelines(lines)
 
 def register_user(username, password, role="user"):
     """
@@ -42,6 +68,8 @@ def register_user(username, password, role="user"):
     conn.commit()
     conn.close()
 
+    sync_user_to_file(username, password_hash, role)
+
     return True, f"User '{username}' registered successfully!"
 
 def login_user(username, password):
@@ -74,6 +102,7 @@ def login_user(username, password):
     hash_bytes = stored_hash.encode('utf-8')
 
     if bcrypt.checkpw(password_bytes, hash_bytes):
+        sync_user_to_file(username, stored_hash, user[3])
         return True, f"Welcome, {username}!"
     else:
         return False, "Invalid password."

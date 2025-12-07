@@ -223,35 +223,40 @@ def get_high_or_critical_incidents(conn):
     #Return dataframe
     return df
 
-# Test: Run analytical queries
-conn = connect_database()
+def testing_functions():
+    """Helper to print sample analytical outputs when run as a script."""
+    conn = connect_database()
 
-print("\n Incidents by Type:")
-df_by_type = get_incidents_by_type_count(conn)
-print(df_by_type)
+    print("\n Incidents by Type:")
+    df_by_type = get_incidents_by_type_count(conn)
+    print(df_by_type)
 
-print("\n Incidents by Status:")
-df_by_status = get_incidents_by_status(conn)
-print(df_by_status)
+    print("\n Incidents by Status:")
+    df_by_status = get_incidents_by_status(conn)
+    print(df_by_status)
 
-print("\n Incidents by Severity:")
-df_by_severity = get_incidents_by_severity(conn)
-print(df_by_severity)
+    print("\n Incidents by Severity:")
+    df_by_severity = get_incidents_by_severity(conn)
+    print(df_by_severity)
 
-print("\n High Severity Incidents by Status:")
-df_high_severity = get_high_severity_by_status(conn)
-print(df_high_severity)
+    print("\n High Severity Incidents by Status:")
+    df_high_severity = get_high_severity_by_status(conn)
+    print(df_high_severity)
 
-print("\n Incident Types with Many Cases (>5):")
-df_many_cases = get_incident_types_with_many_cases(conn, min_count=5)
-print(df_many_cases)
+    print("\n Incident Types with Many Cases (>5):")
+    df_many_cases = get_incident_types_with_many_cases(conn, min_count=5)
+    print(df_many_cases)
 
-print("\n Open Incidents:")
-df_open = get_open_incidents(conn)
-print(df_open)
+    print("\n Open Incidents:")
+    df_open = get_open_incidents(conn)
+    print(df_open)
 
-print("\n High or Critical Incidents:")
-df_high_critical = get_high_or_critical_incidents(conn)
-print(df_high_critical)
+    print("\n High or Critical Incidents:")
+    df_high_critical = get_high_or_critical_incidents(conn)
+    print(df_high_critical)
 
-conn.close()
+    conn.close()
+
+#Ensures that 'testing_functions' runs only when file is executed directly
+if __name__ == "__main__":
+    testing_functions()

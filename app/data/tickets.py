@@ -217,27 +217,32 @@ def get_high_or_critical_tickets(conn):
     return df
 
 
-# Test: Run analytical queries
-conn = connect_database()
+def testing_functions():
+    """Helper to print ticket analytics when executed directly."""
+    conn = connect_database()
 
-print("\n Tickets by Status:")
-df_by_status = get_tickets_by_status_count(conn)
-print(df_by_status)
+    print("\n Tickets by Status:")
+    df_by_status = get_tickets_by_status_count(conn)
+    print(df_by_status)
 
-print("\n High Priority Tickets by Assignee:")
-df_high_priority = get_high_priority_by_assignee(conn)
-print(df_high_priority)
+    print("\n High Priority Tickets by Assignee:")
+    df_high_priority = get_high_priority_by_assignee(conn)
+    print(df_high_priority)
 
-print("\n Categories with Many Tickets (>5):")
-df_many_tickets = get_categories_with_many_tickets(conn, min_count=5)
-print(df_many_tickets)
+    print("\n Categories with Many Tickets (>5):")
+    df_many_tickets = get_categories_with_many_tickets(conn, min_count=5)
+    print(df_many_tickets)
 
-print("\n Open Tickets:")
-df_open_tickets = get_open_tickets(conn)
-print(df_open_tickets)
+    print("\n Open Tickets:")
+    df_open_tickets = get_open_tickets(conn)
+    print(df_open_tickets)
 
-print("\n High or Critical Tickets:")
-df_high_critical_tickets = get_high_or_critical_tickets(conn)
-print(df_high_critical_tickets)
+    print("\n High or Critical Tickets:")
+    df_high_critical_tickets = get_high_or_critical_tickets(conn)
+    print(df_high_critical_tickets)
 
-conn.close()
+    conn.close()
+
+#Ensures that 'testing_functions' runs only when file is executed directly
+if __name__ == "__main__":
+    testing_functions()

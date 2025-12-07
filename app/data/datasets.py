@@ -210,31 +210,36 @@ def get_dataset_column_counts(conn):
     df = pd.read_sql_query(query, conn)
     return df
 
-# Test: Run analytical queries
-conn = connect_database()
+def testing_functions():
+    """Helper to print dataset analytics when executed directly."""
+    conn = connect_database()
 
-print("\n Datasets by Category:")
-df_by_category = get_datasets_by_category(conn)
-print(df_by_category)
+    print("\n Datasets by Category:")
+    df_by_category = get_datasets_by_category(conn)
+    print(df_by_category)
 
-print("\n Datasets by Source:")
-df_by_source = get_datasets_by_source(conn)
-print(df_by_source)
+    print("\n Datasets by Source:")
+    df_by_source = get_datasets_by_source(conn)
+    print(df_by_source)
 
-print("\n Dataset Record Counts:")
-df_record_counts = get_dataset_record_counts(conn)
-print(df_record_counts)
+    print("\n Dataset Record Counts:")
+    df_record_counts = get_dataset_record_counts(conn)
+    print(df_record_counts)
 
-print("\n Dataset Column Counts:")
-df_column_counts = get_dataset_column_counts(conn)
-print(df_column_counts)
+    print("\n Dataset Column Counts:")
+    df_column_counts = get_dataset_column_counts(conn)
+    print(df_column_counts)
 
-print("\n Large Datasets by Source (>=10000 records):")
-df_large = get_large_datasets_by_source(conn)
-print(df_large)
+    print("\n Large Datasets by Source (>=10000 records):")
+    df_large = get_large_datasets_by_source(conn)
+    print(df_large)
 
-print("\n Datasets with >10 Columns:")
-df_many_columns = get_large_columns_datasets(conn)
-print(df_many_columns)
+    print("\n Datasets with >10 Columns:")
+    df_many_columns = get_large_columns_datasets(conn)
+    print(df_many_columns)
 
-conn.close()
+    conn.close()
+
+#Ensures that 'testing_functions' runs only when file is executed directly
+if __name__ == "__main__":
+    testing_functions()

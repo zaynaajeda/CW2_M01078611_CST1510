@@ -114,12 +114,24 @@ with tab_register:
     #Subheading
     st.subheader("Create a new account")
 
-    #Prompt user to enter new username, role and password
+    #Prompt user to enter new username and role
     new_username = st.text_input("Choose a username", key="register_username")
     user_role = st.selectbox("Select role", valid_roles, key="register_role")
-    new_password = st.text_input("Choose a password", type="password", key="register_password")
-    confirm_password = st.text_input("Confirm password", type="password", key="register_confirm")
 
+    #Inform user about each role
+    st.info(
+        "Roles overview:\n"
+        "- 'user' can access dashboards, analytics, and AI insights but cannot edit or delete any records.\n"
+        "- 'analyst' manages data for their assigned domains (create/update/delete incidents, datasets, or tickets as needed).\n"
+        "- 'admin' controls every domain plus platform settings (full CRUD, user governance, and configuration)."
+    )
+
+    #Prompt user to enter password
+    new_password = st.text_input("Choose a password", type="password", key="register_password")
+
+    #Prompt user to re-enter password
+    confirm_password = st.text_input("Confirm password", type="password", key="register_confirm")
+    
     #Inform user what password should contain
     st.info("Passwords must contain 7-50 characters and include at least one uppercase letter, "
              "one lowercase letter, one number, and one special character.")

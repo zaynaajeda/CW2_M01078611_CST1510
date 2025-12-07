@@ -79,12 +79,12 @@ if not domain:
     #Stop execution of the whole script
     st.stop()
 
-'''
-    Selected domain from dashboard is required to allow AI analysis for records(incidents/datasets/tickets).
 
-    The system prompt and user prompt used for each domain is also dependent on the selected domain.
-    (get_ai_prompt, get_system_prompt)
-'''
+    # Selected domain from dashboard is required to allow AI analysis for records(incidents/datasets/tickets).
+
+    # The system prompt and user prompt used for each domain is also dependent on the selected domain.
+    # (get_ai_prompt, get_system_prompt)
+
 
 #Inform user about domain selected
 st.info(f"Selected domain: **{domain}**")

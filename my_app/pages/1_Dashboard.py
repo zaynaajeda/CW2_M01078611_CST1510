@@ -175,14 +175,18 @@ else:
             status = st.selectbox("Status", ["Open", "In Progress", "Resolved", "Closed"])
             date = st.date_input("Date Reported")
             description = st.text_area("Description")
+            confirm_add_incident = st.checkbox("Yes, add incident.")
                 
             #Submit button for the form
             submitted = st.form_submit_button("Add Incident")
 
             #Verify if form is submitted
             if submitted:
+                #Verify confirmation checkbox
+                if not confirm_add_incident:
+                    st.warning("Please confirm addition before proceeding.")
                 #Verify if all fields are filled
-                if not incident_type or not description or not date or not severity or not status:
+                elif not incident_type or not description or not date or not severity or not status:
                     #Inform user to fill all fields
                     st.warning("Please fill in all fields.")
                 else:
@@ -247,13 +251,17 @@ else:
                 
                 #Prompt user to select new status of incident
                 new_incident_status = st.selectbox("New Status", ["-- Select New Status --", "Open", "In Progress", "Resolved", "Closed"], key="update_status")
+                confirm_update_incident = st.checkbox("Yes, update incident.")
                 #Button to submit form
                 submit_update = st.form_submit_button("Update Incident")
 
             #Verify if form is submitted
             if submit_update:
+                #Verify confirmation checkbox
+                if not confirm_update_incident:
+                    st.warning("Please confirm update before proceeding.")
                 #Verify if new status is selected
-                if new_incident_status == "-- Select New Status --":
+                elif new_incident_status == "-- Select New Status --":
                     #Warning message
                     st.warning("Please select new status of incident.")
                     #Stop whole execution of script
@@ -329,14 +337,18 @@ else:
             record_count = st.number_input("Record Count", min_value = 1000, step = 1000)
             column_count = st.number_input("Column Count", min_value = 1, step = 1)
             file_size = st.number_input("File Size (MB)", min_value = 0.1, step = 0.1)
+            confirm_add_dataset = st.checkbox("Yes, add dataset.")
 
             #Submit button for the form
             dataset_submit = st.form_submit_button("Add Dataset")
 
         #Verify if form is submitted
         if dataset_submit:
+            #Verify confirmation checkbox
+            if not confirm_add_dataset:
+                st.warning("Please confirm addition before proceeding.")
             #Verify if all fields are filled
-            if not dataset_name or not category or not source or not last_updated:
+            elif not dataset_name or not category or not source or not last_updated:
                 #Inform user to fill all fields
                 st.warning("Please fill in all fields.")
             else:
@@ -404,14 +416,18 @@ else:
                 
                 #Prompt user to select new record count of dataset
                 new_record_count = st.number_input("New Record Count", min_value = 1000, step = 1000)
+                confirm_update_dataset = st.checkbox("Yes, update dataset.")
                 
                 #Button to submit form
                 submit_dataset_update = st.form_submit_button("Update Dataset")
 
             #verify if form is submitted
             if submit_dataset_update:
+                #Verify confirmation checkbox
+                if not confirm_update_dataset:
+                    st.warning("Please confirm update before proceeding.")
                 #Proceeds with updating record of dataset
-                if update_dataset_record(conn, int(dataset_id_update), int(new_record_count)):
+                elif update_dataset_record(conn, int(dataset_id_update), int(new_record_count)):
                     #Success message
                     st.success(f"Dataset of ID {dataset_id_update} updated to {new_record_count} records.")
                     #Pause program for 1s
@@ -480,14 +496,18 @@ else:
             ticket_created_date = st.date_input("Created Date")
             resolved_days = st.number_input("Days required to resolve", min_value=1, step=1)
             ticket_description = st.text_area("Description")
+            confirm_add_ticket = st.checkbox("Yes, add ticket.")
 
             #Submit button for form
             submit_ticket = st.form_submit_button("Add Ticket")
 
         #Verify if form is submitted
         if submit_ticket:
+            #Verify confirmation checkbox
+            if not confirm_add_ticket:
+                st.warning("Please confirm addition before proceeding.")
             #Verify is user has entered all fields
-            if not ticket_subject or not ticket_category or not ticket_description or not assigned_to:
+            elif not ticket_subject or not ticket_category or not ticket_description or not assigned_to:
                 #Inform user to fill all fields
                 st.warning("Please fill in all fields.")
             else:
@@ -560,13 +580,17 @@ else:
                 
                 #Prompt user to select new status of ticket
                 new_ticket_status = st.selectbox("New Status", ["-- Select New Status --", "Open", "In Progress", "Waiting for User", "Resolved", "Closed"], key="update_status")
+                confirm_update_ticket = st.checkbox("Yes, update ticket.")
                 #Button to submit form
                 submit_ticket_update = st.form_submit_button("Update Ticket")
 
             #Verify if form is submitted
             if submit_ticket_update:
+                #Verify confirmation checkbox
+                if not confirm_update_ticket:
+                    st.warning("Please confirm update before proceeding.")
                 #Verify if new status is selected
-                if new_ticket_status == "-- Select New Status --":
+                elif new_ticket_status == "-- Select New Status --":
                     #Warning message
                     st.warning("Please select new status of ticket.")
                     #Stop whole execution of script

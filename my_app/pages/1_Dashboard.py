@@ -37,9 +37,11 @@ from app.data.tickets import (
     get_all_tickets,
     insert_ticket,
     delete_ticket,
-    update_ticket,
     get_open_tickets,
     get_high_or_critical_tickets)
+
+#Import class ITTicket
+from models.tickets import ITTicket
 
 from my_app.components.sidebar import logout_section
 
@@ -628,8 +630,11 @@ else:
                         #Stop whole execution of script
                         st.stop()
 
-                    #Proceed with updating ticket status
-                    if update_ticket(conn, int(ticket_id_update), new_ticket_status):
+                    #Create object/instance using class ITTicket
+                    ticket_oop = ITTicket(ticket_id_update)
+
+                    #Update ticket status using method from class ITTicket
+                    if ticket_oop.update_ticket(new_ticket_status):
                         #Success message
                         st.success(f"Ticket of ID {ticket_id_update} updated to {new_ticket_status}.")
 

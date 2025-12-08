@@ -27,6 +27,7 @@ class Dataset:
         #Create cursor
         cursor = conn.cursor()
         
+        #Execute insert statement
         cursor.execute("""
                             INSERT INTO datasets_metadata
                             (dataset_name, category, source, last_updated,

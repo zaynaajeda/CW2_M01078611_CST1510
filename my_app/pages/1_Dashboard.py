@@ -14,7 +14,6 @@ from app.data.db import connect_database
 #Import incident management functions
 from app.data.incidents import (
     insert_incident,
-    update_incident,
     delete_incident,
     get_open_incidents,
     get_high_or_critical_incidents)
@@ -282,7 +281,7 @@ else:
                         st.stop()
 
                     #Proceed with updating incident status
-                    if update_incident(conn, int(incident_id_update), new_incident_status):
+                    if incident_oop.update_incident(int(incident_id_update), new_incident_status):
                         #Success message
                         st.success(f"Incident of ID {incident_id_update} updated to {new_incident_status}.")
 

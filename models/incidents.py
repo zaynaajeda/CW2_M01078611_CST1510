@@ -28,4 +28,30 @@ class Cyberincident:
         conn.close()
 
         #Return DataFrame
-        return df     
+        return df  
+
+    #Method to change status of incident
+    def update_incident(self, incident_id: int, new_status: str) -> int:
+        """Update incident status of an incident"""
+        #Connect to database
+        conn = connect_database()
+
+        #Create cursor
+        cursor = conn.cursor()
+
+        #Execute update statement
+        cursor.execute("""
+            UPDATE cyber_incidents SET status = ? WHERE id = ?
+            """, (new_status, incident_id))
+        
+        #Save changes
+        conn.commit()
+
+        #Get number of updated rows
+        row_count = cursor.rowcount
+
+        #Close connection
+        conn.close()
+
+        #Return number of updated rows
+        return row_count 

@@ -280,7 +280,7 @@ else:
                         #Stop whole execution of script
                         st.stop()
 
-                    #Proceed with updating incident status
+                    #Proceed with method updating incident status from class
                     if incident_oop.update_incident(int(incident_id_update), new_incident_status):
                         #Success message
                         st.success(f"Incident of ID {incident_id_update} updated to {new_incident_status}.")

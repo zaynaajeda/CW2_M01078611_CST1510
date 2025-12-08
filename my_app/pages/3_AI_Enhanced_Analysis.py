@@ -5,12 +5,13 @@ import sys
 
 #Import all incidents from database
 from app.data.incidents import (
-    get_all_incidents,
     get_incidents_by_severity,
     get_incidents_by_status,
     get_incidents_by_type_count,
-    get_incidents_over_time,
-)
+    get_incidents_over_time)
+
+#Import class Cyberincident
+from models.incidents import Cyberincident
 
 #Import all datasets from database
 from app.data.datasets import (
@@ -128,11 +129,16 @@ domain_insights = {}
 if domain == "Cyber Security":
     #Create dictionary to store all records in cyber security
     #Each key contains a dashboard chart with its data as its value
+
+    #Create object/instance for class Cyberincident
+    incident_oop = Cyberincident()
     charts = {
         "incidents_over_time": get_incidents_over_time(conn),
         "incidents_by_type": get_incidents_by_type_count(conn),
         "incidents_by_status": get_incidents_by_status(conn),
-        "incidents_by_severity": get_incidents_by_severity(conn)}
+        "incidents_by_severity": get_incidents_by_severity(conn),
+        "all_incidents": incident_oop.get_all_incidents(),  #Fetches all incidents from database using method from class
+    }
 
     #Iterate through dictionary charts
     #name represents key and df the value(dataframe)
@@ -226,8 +232,8 @@ if role_user == "analyst" or role_user == "admin":
 
     #Verify if domain is cyber security
     if domain == "Cyber Security":
-        #Fetch incidents from database
-        incidents = get_all_incidents()
+        #Fetches all incidents from database using method from class
+        incidents = incident_oop.get_all_incidents()
 
 
         #In case selectbox is skipped, there is no creation of records

@@ -13,12 +13,14 @@ from app.data.db import connect_database
 
 #Import incident management functions
 from app.data.incidents import (
-    get_all_incidents,
     insert_incident,
     update_incident,
     delete_incident,
     get_open_incidents,
     get_high_or_critical_incidents)
+
+#Import class Cyberincident
+from models.incidents import Cyberincident
 
 #Import datasets management functions
 from app.data.datasets import (
@@ -128,8 +130,11 @@ else:
 
         st.markdown("##### Overview of Incidents")
 
-        #Fetch all incidents from database
-        incidents = get_all_incidents()
+        #Create object/instance for class Cyberincident
+        incident_oop = Cyberincident()
+
+        #Fetches all incidents from database using method from class
+        incidents = incident_oop.get_all_incidents()
         total_incidents = len(incidents)
 
         #Get maximum and minimum incident id from database

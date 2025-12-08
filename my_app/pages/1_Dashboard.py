@@ -24,11 +24,13 @@ from models.incidents import Cyberincident
 #Import datasets management functions
 from app.data.datasets import (
     get_all_datasets,
-    insert_dataset,
     update_dataset_record,
     delete_dataset,
     get_large_datasets_by_source,
     get_large_columns_datasets)
+
+#Import class Dataset
+from models.datasets import Dataset
 
 #Import tickets management functions
 from app.data.tickets import (
@@ -372,15 +374,17 @@ else:
                     #Inform user to fill all fields
                     st.warning("Please fill in all fields.")
                 else:
-                    #Insert new dataset into database
-                    insert_dataset(
-                            dataset_name,
-                            category,
-                            source,
-                            last_updated.strftime("%Y-%m-%d"),
-                            int(record_count),
-                            int(column_count),
-                            file_size)
+                    #Create object/instance using class Dataset
+                    dataset_oop = Dataset(dataset_name=dataset_name,
+                                            category=category,
+                                            source=source,
+                                            last_updated=last_updated.strftime("%Y-%m-%d"),
+                                            record_count=int(record_count),
+                                            column_count=int(column_count),
+                                            file_size_mb=file_size)
+                    
+                    #Insert new dataset into database using method from class
+                    dataset_oop.insert_dataset()
                     
                     #Success message
                     st.success("New dataset added successfully.")

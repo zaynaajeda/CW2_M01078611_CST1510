@@ -11,9 +11,10 @@ from app.services.auth import (
     login_user,
     user_exists,
     validate_username,
-    validate_password,
     check_password_strength,
     valid_roles,)
+
+from models.auth import User    #Import class User
 
 from my_app.components.sidebar import logout_section
 
@@ -161,8 +162,10 @@ with tab_register:
             elif user_exists(new_username):
                 st.error("Username already exists. Choose a different one.")
             else:
-                #Validate password
-                is_valid_password, password_error = validate_password(new_password)
+                #Create object/instance for class User
+                user_oop = User(new_username, "")
+                #Validate password using method validate_password from class User
+                is_valid_password, password_error = user_oop.validate_password(new_password)
 
                 #Check if password is valid
                 if not is_valid_password:

@@ -13,7 +13,8 @@ sys.path.append(ROOT_DIR)
 from app.data.db import connect_database
 from my_app.components.sidebar import logout_section
 from app.services.user_service import migrate_users_from_file
-from app.services.auth import validate_password, change_password, valid_roles, USER_DATA_FILE
+from app.services.auth import change_password, valid_roles, USER_DATA_FILE
+from models.auth import User
 from app.data.users import (get_all_users,
                             update_user_role,
                             delete_user,
@@ -109,8 +110,10 @@ if submitted:
 
     #Continue execution if new password is correct
     else:
-        #Validate new password
-        is_valid, validation_message = validate_password(new_password)
+        #Create object/instance for class User
+        user_oop = User(st.session_state.username, "")
+        #Validate password using method validate_password from class User
+        is_valid, validation_message = user_oop.validate_password(new_password)
 
         #Error message if password is not valid
         if not is_valid:
@@ -263,8 +266,10 @@ if role_user == "admin":
                 #Inform user about passwords not matching
                 st.error("New passwords do not match.")
             else:
-                #Perform validation on password
-                is_valid, validation_message = validate_password(admin_new_password)
+                #Create object/instance for class User
+                admin_user = User(reset_user, "")
+                #Validate password using method validate_password from class User
+                is_valid, validation_message = admin_user.validate_password(admin_new_password)
 
                 #Check if password is valid
                 if not is_valid:

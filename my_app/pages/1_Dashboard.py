@@ -178,7 +178,7 @@ else:
         st.markdown("#### Incidents Management")
 
         #Ensure that this section is only available to admins
-        if role_user == "admin" or "analyst":
+        if role_user in ("admin", "analyst"):
 
             st.markdown("##### Add New Incident")
 
@@ -347,7 +347,7 @@ else:
         st.markdown("#### Datasets Management")
 
         #Ensure that this section is only available to admins
-        if role_user == "admin" or "analyst":
+        if role_user in ("admin", "analyst"):
 
             st.markdown("##### Add New Dataset")
 
@@ -515,7 +515,7 @@ else:
         st.markdown("#### Tickets Management")
 
         #Ensure that this section is only available to admins
-        if role_user == "admin" or "analyst":
+        if role_user in ("admin", "analyst"):
 
             st.markdown("##### Add New Ticket")
 

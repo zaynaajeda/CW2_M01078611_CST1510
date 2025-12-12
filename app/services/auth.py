@@ -25,6 +25,8 @@ LOCKOUT_DURATION_SECONDS = 300
 SESSION_DURATION_SECONDS = 3600
 #List to store available roles of user
 valid_roles = ["user", "admin", "analyst"]
+#Supported analyst domains (kept in sync with Streamlit UI)
+valid_analyst_domains = ["Cyber Security", "Data Science", "IT Operations"]
 
 #Password hashing function
 def hash_password(plain_text_password):
@@ -46,11 +48,20 @@ def verify_password(plain_text_password, hashed_password):
     return bcrypt.checkpw(password_bytes, hashed_password_bytes)
 
 #Registration function
-def register_user(username, password, role):
+def register_user(username, password, role, analyst_domain=None):
     #Verify if role is valid
     if role not in valid_roles:
         #Return False and error message for invalid role
         return False, f"Invalid role '{role}'."
+
+    #Ensure analyst accounts are tied to a supported domain
+    if role == "analyst":
+        if analyst_domain not in valid_analyst_domains:
+            return False, "Please choose a valid analyst domain."
+    elif analyst_domain:
+        analyst_domain = analyst_domain.strip()
+    else:
+        analyst_domain = None
 
     #Check if username already exists
     if user_exists(username):
@@ -60,17 +71,18 @@ def register_user(username, password, role):
     #Hash password
     hashed_password = hash_password(password).decode("utf-8")
 
-    #Store username, hashed password and role in file
+    #Store username, hashed password, role and domain in file
     with open(USER_DATA_FILE, "a") as f:
-        f.write(f"{username},{hashed_password},{role}\n")
+        domain_value = analyst_domain or ""
+        f.write(f"{username},{hashed_password},{role},{domain_value}\n")
 
     #Mirror user into database so admin panel stays in sync
     try:
         conn = connect_database()
         cursor = conn.cursor()
         cursor.execute(
-            "INSERT INTO users (username, password_hash, role) VALUES (?, ?, ?)",
-            (username, hashed_password, role)
+            "INSERT INTO users (username, password_hash, role, domain) VALUES (?, ?, ?, ?)",
+            (username, hashed_password, role, analyst_domain)
         )
         conn.commit()
         conn.close()
@@ -102,7 +114,7 @@ def login_user(username, password):
 
     #Handle case where account is locked
     if not is_unlocked:
-        return False, f"Account is locked. Try again in {remaining_time} seconds."
+        return False, f"Account is locked. Try again in {remaining_time} seconds.", None
 
     #Error handling for existence of users.txt
     try:
@@ -115,8 +127,12 @@ def login_user(username, password):
                 if not line:
                     continue
 
-                #Split line into username, hashed password and role
-                user, hash_value, role = line.split(',', 2)
+                #Split line into username, hashed password, role and optional domain
+                parts = line.split(',', 3)
+                if len(parts) < 3:
+                    continue
+                user, hash_value, role = parts[:3]
+                domain = parts[3] if len(parts) > 3 else ""
                 #Clean up hash value
                 hash_pass = hash_value.strip()
 
@@ -133,19 +149,19 @@ def login_user(username, password):
                     if current_user.verify_password(password, hash_pass):
                         #Reset lockout status on successful login
                         manage_lockout_status(username, 'reset')
-                        return True, role
+                        return True, role, domain.strip() or None
 
                     #Handle invalid password
                     else:
                         #Increment failed attempts
                         manage_lockout_status(username, 'increment_fail')
                         #Return False and error message
-                        return False, "Invalid password."
+                        return False, "Invalid password.", None
 
         #Username not found
-        return False, f"Username '{username}' not found."
+        return False, f"Username '{username}' not found.", None
     except FileNotFoundError:
-        return False, "No users have been registered yet."
+        return False, "No users have been registered yet.", None
 
 #Function to change user password
 def change_password(username, current_password, new_password):
@@ -179,13 +195,14 @@ def change_password(username, current_password, new_password):
             continue
 
         #Split line into username, hashed password and role
-        parts = line.split(",", 2)
+        parts = line.split(",", 3)
         if len(parts) < 3:
             updated_lines.append(raw_line)
             continue
 
-        #Store username, hashed password and role in variables
-        user, hash_value, role = parts
+        #Store username, hashed password, role and domain in variables
+        user, hash_value, role = parts[:3]
+        domain = parts[3] if len(parts) > 3 else ""
 
         #Check if username matches
         if user != username:
@@ -211,7 +228,7 @@ def change_password(username, current_password, new_password):
 
         #Change hashed password into new one
         new_hash = hash_password(new_password).decode("utf-8")
-        updated_lines.append(f"{username},{new_hash},{role.strip()}\n")
+        updated_lines.append(f"{username},{new_hash},{role.strip()},{domain.strip()}\n")
 
     #Case for user not found
     if not user_found:
@@ -461,6 +478,16 @@ def main():
                 #Prompt user to enter a valid role
                 user_role = input("Enter user role (user/admin/analyst): ")
 
+            analyst_domain = None
+            if user_role == "analyst":
+                print("\n--- ANALYST DOMAIN SELECTION ---")
+                print("Available domains:")
+                for domain in valid_analyst_domains:
+                    print(f" - {domain}")
+                analyst_domain = input("Enter the analyst domain exactly as shown above: ").strip()
+                while analyst_domain not in valid_analyst_domains:
+                    analyst_domain = input("Invalid domain. Please enter one of the supported domains: ").strip()
+
             #Prompt user to enter password
             password = input("\nEnter a password: ").strip()
 
@@ -498,7 +525,7 @@ def main():
                 continue
 
             # Register the user
-            success, message = register_user(username, password, user_role)
+            success, message = register_user(username, password, user_role, analyst_domain)
             print(message)
 
         elif choice == '2':
@@ -508,7 +535,7 @@ def main():
             password = input("Enter your password: ").strip()
 
             # Attempt login
-            is_logged_in, role_or_message = login_user(username, password)
+            is_logged_in, role_or_message, analyst_domain = login_user(username, password)
 
             #Successful login
             if is_logged_in:
@@ -516,6 +543,8 @@ def main():
                 print("\nYou are now logged in.")
                 print(f"Success: Welcome, {username}!")
                 print(f"Role: {role_or_message}")
+                if analyst_domain:
+                    print(f"Domain: {analyst_domain}")
 
                 #Create a session token
                 session_token = create_session(username)

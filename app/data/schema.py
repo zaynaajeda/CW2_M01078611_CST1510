@@ -9,9 +9,16 @@ def create_users_table(conn):
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             username TEXT NOT NULL UNIQUE,
             password_hash TEXT NOT NULL,
-            role TEXT DEFAULT 'user'
+            role TEXT DEFAULT 'user',
+            domain TEXT
         )
     """)
+
+    #Ensure domain column exists for older databases
+    cursor.execute("PRAGMA table_info(users)")
+    columns = [row[1] for row in cursor.fetchall()]
+    if "domain" not in columns:
+        cursor.execute("ALTER TABLE users ADD COLUMN domain TEXT")
 
     #Save changes
     conn.commit()

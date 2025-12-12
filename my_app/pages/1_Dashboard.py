@@ -45,11 +45,12 @@ from models.tickets import ITTicket
 
 from my_app.components.sidebar import logout_section
 
-#Retrieve role of user from session state
-role_user = st.session_state.role
-
 #Webpage title and icon
 st.set_page_config(page_title="Dashboard", page_icon="📊", layout="wide")
+
+#Retrieve role and domain of analyst from session state
+role_user = st.session_state.role
+analyst_domain = st.session_state.analyst_domain
 
 #Ensure session state variables are initialised
 if "logged_in" not in st.session_state:
@@ -66,6 +67,10 @@ if "selected_domain" not in st.session_state:
 if "role" not in st.session_state:
     #Initialise role
     st.session_state.role = ""
+
+if "analyst_domain" not in st.session_state:
+    st.session_state.analyst_domain = ""
+
 
 # Check if user is logged in
 if not st.session_state.logged_in:
@@ -177,8 +182,11 @@ else:
         st.divider()
         st.markdown("#### Incidents Management")
 
-        #Ensure that this section is only available to admins
-        if role_user in ("admin", "analyst"):
+        #Variable that store True/False to check if user can access CRUD operations for incidents
+        can_manage_incidents = role_user == "admin" or (role_user == "analyst" and analyst_domain == "Cyber Security")
+
+        #Verify if value is True
+        if can_manage_incidents:
 
             st.markdown("##### Add New Incident")
 
@@ -296,10 +304,8 @@ else:
                     else:
                         #Error message
                         st.error("No incident found with that ID.")
-        #If user is not admin(analyst/user)
         else:
-            #Inform user that he has to be admin to access this section
-            st.warning(f"You must be **analyst** or **admin** to have access to this section")
+            st.warning("Only admins or Cyber Security analysts can manage incidents.")
 
     #Verify if domain is Data Science
     if domain == "Data Science":
@@ -346,8 +352,11 @@ else:
         st.divider()
         st.markdown("#### Datasets Management")
 
-        #Ensure that this section is only available to admins
-        if role_user in ("admin", "analyst"):
+        #Variable that store True/False to check if user can access CRUD operations for datasets
+        can_manage_datasets = role_user == "admin" or (role_user == "analyst" and analyst_domain == "Data Science")
+
+        #Verify if value is True
+        if can_manage_datasets:
 
             st.markdown("##### Add New Dataset")
 
@@ -463,11 +472,8 @@ else:
                     else:
                         #Error message
                         st.error("No dataset found with that ID.")
-        
-        #If user is not admin(analyst/user)
         else:
-            #Inform user that he has to be admin to access this section
-            st.warning(f"You must be **analyst** or **admin** to have access to this section")
+            st.warning("Only admins or Data Science analysts can manage datasets.")
 
     #Verify if domain is IT Operations
     if domain == "IT Operations":
@@ -514,8 +520,11 @@ else:
         st.divider()
         st.markdown("#### Tickets Management")
 
-        #Ensure that this section is only available to admins
-        if role_user in ("admin", "analyst"):
+        #Variable that store True/False to check if user can access CRUD operations for tickets
+        can_manage_tickets = role_user == "admin" or (role_user == "analyst" and analyst_domain == "IT Operations")
+
+        #Verify if value is True
+        if can_manage_tickets:
 
             st.markdown("##### Add New Ticket")
 
@@ -645,10 +654,8 @@ else:
                     else:
                         #Error message
                         st.error("No ticket found with that ID.")
-        #If user is not admin(analyst/user)
         else:
-            #Inform user that he has to be admin to access this section
-            st.warning(f"You must be **analyst** or **admin** to have access to this section")
+            st.warning("Only admins or IT Operations analysts can manage tickets.")
 
     #Save changes
     conn.commit()

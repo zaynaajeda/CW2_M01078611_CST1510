@@ -12,7 +12,8 @@ from app.services.auth import (
     user_exists,
     validate_username,
     check_password_strength,
-    valid_roles,)
+    valid_roles,
+    valid_analyst_domains,)
 
 from models.auth import User    #Import class User
 
@@ -33,6 +34,9 @@ if "username" not in st.session_state:
 #Initialise role
 if "role" not in st.session_state:
     st.session_state.role = ""
+
+if "analyst_domain" not in st.session_state:
+    st.session_state.analyst_domain = ""
 
 #Verify if user is logged in
 if st.session_state.logged_in:
@@ -79,17 +83,29 @@ with tab_login:
             st.warning("Please enter both username and password.")
         else:
             #Authenticate user
-            is_authenticated, role_user = login_user(login_username, login_password)
+            is_authenticated, role_or_message, analyst_domain = login_user(login_username, login_password)
 
             #Check authentication result
             if is_authenticated:
                 #Set session state 
                 st.session_state.logged_in = True
                 st.session_state.username = login_username
-                st.session_state.role = role_user
+                st.session_state.role = role_or_message
+
+                if role_or_message == "analyst":
+                    st.session_state.analyst_domain = analyst_domain or ""
+                    #Force dashboard dropdown to start at "-- Select a Domain --"
+                    st.session_state.selected_domain = None
+                    st.session_state.pop("select_domain", None)
+                else:
+                    #Clear any persisted analyst domain for other roles
+                    st.session_state.analyst_domain = ""
 
                 #Success message for login
-                st.success(f"Logged in as **{login_username}** ({role_user}).")
+                if analyst_domain and role_or_message == "analyst":
+                    st.success(f"Logged in as **{login_username}** ({role_or_message} for {analyst_domain}).")
+                else:
+                    st.success(f"Logged in as **{login_username}** ({role_or_message}).")
 
                 #Button to go to dashboard
                 if st.button("Go to dashboard"):
@@ -97,7 +113,7 @@ with tab_login:
                     st.switch_page("pages/1_Dashboard.py")
             else:
                 #Error message for login failure
-                st.error(role_user or "Invalid username or password.")
+                st.error(role_or_message or "Invalid username or password.")
 
 
 #Register Tab
@@ -117,6 +133,13 @@ with tab_register:
     #Prompt user to enter new username and role
     new_username = st.text_input("Choose a username", key="register_username")
     user_role = st.selectbox("Select role", valid_roles, key="register_role")
+
+    #Removes any data stored in variable
+    analyst_domain = None
+
+    #Prompt user to choose the domain for which he is an analyst
+    if user_role == "analyst":
+        analyst_domain = st.selectbox("Select domain of analyst", valid_analyst_domains, key="domain_analyst")
 
     #Inform user about each role
     st.info(
@@ -181,7 +204,7 @@ with tab_register:
                         st.warning("Password is too weak. Try using more varied characters.")
                     else:
                         #Register new username
-                        success, message = register_user(new_username, new_password, user_role)
+                        success, message = register_user(new_username, new_password, user_role, analyst_domain)
 
                         #Verify if user could be registered
                         if success:

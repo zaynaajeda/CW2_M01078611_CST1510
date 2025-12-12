@@ -39,6 +39,9 @@ if "role" not in st.session_state:
     #Initialise role
     st.session_state.role = ""
 
+if "analyst_domain" not in st.session_state:
+    st.session_state.analyst_domain = ""
+
 # Check if user is logged in
 if not st.session_state.logged_in:
     st.error("You must be logged in to view the settings page.")
@@ -79,6 +82,8 @@ st.markdown("#### Profile Information")
 #Display login username and role
 st.write(f"**Username:** {st.session_state.username or 'Unknown'}")
 st.write(f"**Role:** {st.session_state.role or 'Unknown'}")
+if st.session_state.role == "analyst":
+    st.write(f"**Domain:** {st.session_state.analyst_domain or 'Unassigned'}")
 
 
 st.markdown("##### Change Password")

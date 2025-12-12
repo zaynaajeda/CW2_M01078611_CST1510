@@ -48,11 +48,12 @@ sys.path.append(ROOT_DIR)
 #Initialise OpenAI client
 client = OpenAI(api_key=st.secrets["OPENAI_API_KEY"])
 
-#Retrieve role of user from session state
-role_user = st.session_state.role
-
 #Webpage title and icon
 st.set_page_config(page_title="AI-Enhanced Analysis", page_icon="🧠", layout="wide")
+
+#Retrieve role and domain of analyst from session state
+role_user = st.session_state.role
+analyst_domain = st.session_state.analyst_domain
 
 #Ensure session state variables are initialised
 if "logged_in" not in st.session_state:
@@ -70,6 +71,11 @@ if "chart_ai_analysis" not in st.session_state:
 if "role" not in st.session_state:
     #Initialise role
     st.session_state.role = ""
+
+if "analyst_domain" not in st.session_state:
+    st.session_state.analyst_domain = ""
+
+
 
 # Check if user is logged in
 if not st.session_state.logged_in:
@@ -227,8 +233,18 @@ st.divider()
 
 st.markdown("### AI-Enhanced Analysis of Record")
 
-#Ensure that this section is only available to analysts and admins
-if role_user == "analyst" or role_user == "admin":
+#Check if user is admin or analyst of selected domain
+can_access_ai = role_user == "admin" or (role_user == "analyst" and analyst_domain == domain)
+
+#Verify if value is True
+if not can_access_ai:
+    #Inform user that he does not have access
+    st.warning(f"Only admin or {domain} analysts can access AI analysis of record.")
+    #Stop execution of further codes in script
+    st.stop()
+
+#Ensure that this section is only available to authorised roles/domains
+if can_access_ai:
 
     #Verify if domain is cyber security
     if domain == "Cyber Security":
@@ -373,7 +389,5 @@ if role_user == "analyst" or role_user == "admin":
         #Display AI analysis
         st.write(ai_response)
 
-#If user is not admin(analyst/user)
 else:
-    #Inform user that he has to be admin to access this section
-    st.warning(f"You must be **analyst** or **admin** to have access to this section")
+    st.warning("Only admins or analysts assigned to this domain can access record analysis.")

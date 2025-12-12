@@ -8,7 +8,7 @@ from app.data.schema import create_users_table
 from app.services.auth import USER_DATA_FILE
 
 #Function to ensure that users table and database corresponds
-def sync_user_to_file(username, password_hash, role):
+def sync_user_to_file(username, password_hash, role, domain=None):
     """Ensure DATA/users.txt contains user entry."""
     try:
         #Read whole file
@@ -20,7 +20,8 @@ def sync_user_to_file(username, password_hash, role):
         lines = []
 
     #Rewrite new line
-    new_line = f"{username},{password_hash},{role}\n"
+    domain_value = domain or ""
+    new_line = f"{username},{password_hash},{role},{domain_value}\n"
     #Initialise a flag to know about update
     updated = False
 
@@ -43,7 +44,7 @@ def sync_user_to_file(username, password_hash, role):
     with open(USER_DATA_FILE, "w") as f:
         f.writelines(lines)
 
-def register_user(username, password, role="user"):
+def register_user(username, password, role="user", domain=None):
     """
     Register a new user in the database.
 
@@ -76,13 +77,13 @@ def register_user(username, password, role="user"):
 
     # Insert new user
     cursor.execute(
-        "INSERT INTO users (username, password_hash, role) VALUES (?, ?, ?)",
-        (username, password_hash, role)
+        "INSERT INTO users (username, password_hash, role, domain) VALUES (?, ?, ?, ?)",
+        (username, password_hash, role, domain)
     )
     conn.commit()
     conn.close()
 
-    sync_user_to_file(username, password_hash, role)
+    sync_user_to_file(username, password_hash, role, domain)
 
     return True, f"User '{username}' registered successfully!"
 
@@ -103,20 +104,20 @@ def login_user(username, password):
     cursor = conn.cursor()
 
     # Find user
-    cursor.execute("SELECT * FROM users WHERE username = ?", (username,))
+    cursor.execute("SELECT password_hash, role, domain FROM users WHERE username = ?", (username,))
     user = cursor.fetchone()
     conn.close()
 
     if not user:
         return False, "Username not found."
 
-    # Verify password (user[2] is password_hash column)
-    stored_hash = user[2]
+    # Verify password (query returns password_hash, role, domain)
+    stored_hash = user[0]
     password_bytes = password.encode('utf-8')
     hash_bytes = stored_hash.encode('utf-8')
 
     if bcrypt.checkpw(password_bytes, hash_bytes):
-        sync_user_to_file(username, stored_hash, user[3])
+        sync_user_to_file(username, stored_hash, user[1], user[2])
         return True, f"Welcome, {username}!"
     else:
         return False, "Invalid password."
@@ -145,35 +146,33 @@ def migrate_users_from_file(conn, filepath):
             if not line:
                 continue
 
-            # Parse line: username,password_hash
-            parts = line.split(",", 2)
+            # Parse line: username,password_hash,role[,domain]
+            parts = line.split(",")
 
-            if len(parts) != 3:
+            if len(parts) < 3:
                 print(f"⚠️  Invalid line format: {line}")
                 continue
 
-            if len(parts) == 3:
-                # Extract username, password_hash, and role
-                username = parts[0]
-                raw_hash = parts[1]
-                role = parts[2]
+            username = parts[0].strip()
+            raw_hash = parts[1].strip()
+            role = parts[2].strip()
+            domain = parts[3].strip() if len(parts) > 3 else None
 
-                if raw_hash.startswith("b'") and raw_hash.endswith("'"):
-                    password_hash = raw_hash[2:-1]
-                else:
-                    password_hash = raw_hash
+            if raw_hash.startswith("b'") and raw_hash.endswith("'"):
+                password_hash = raw_hash[2:-1]
+            else:
+                password_hash = raw_hash
 
-
-                # Insert user (ignore if already exists)
-                try:
-                    cursor.execute(
-                        "INSERT OR IGNORE INTO users (username, password_hash, role) VALUES (?, ?, ?)",
-                        (username, password_hash, role)
-                    )
-                    if cursor.rowcount > 0:
-                        migrated_count += 1
-                except sqlite3.Error as e:
-                    print(f"Error migrating user {username}: {e}")
+            # Insert user (ignore if already exists)
+            try:
+                cursor.execute(
+                    "INSERT OR IGNORE INTO users (username, password_hash, role, domain) VALUES (?, ?, ?, ?)",
+                    (username, password_hash, role, domain)
+                )
+                if cursor.rowcount > 0:
+                    migrated_count += 1
+            except sqlite3.Error as e:
+                print(f"Error migrating user {username}: {e}")
 
     conn.commit()
     print(f"✅ Migrated {migrated_count} users from {filepath.name}")
@@ -183,14 +182,14 @@ def migrate_users_from_file(conn, filepath):
     cursor = conn.cursor()
 
     # Query all users
-    cursor.execute("SELECT id, username, role FROM users")
+    cursor.execute("SELECT id, username, role, domain FROM users")
     users = cursor.fetchall()
 
     print(" Users in database:")
-    print(f"{'ID':<5} {'Username':<15} {'Role':<10}")
-    print("-" * 35)
+    print(f"{'ID':<5} {'Username':<15} {'Role':<10} {'Domain':<15}")
+    print("-" * 50)
     for user in users:
-        print(f"{user[0]:<5} {user[1]:<15} {user[2]:<10}")
+        print(f"{user[0]:<5} {user[1]:<15} {user[2]:<10} {user[3] or '-':<15}")
 
     print(f"\nTotal users: {len(users)}")
     conn.close()

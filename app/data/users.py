@@ -7,7 +7,7 @@ def get_user_by_username(username):
     conn = connect_database()
     cursor = conn.cursor()
     cursor.execute(
-        "SELECT * FROM users WHERE username = ?",
+        "SELECT id, username, password_hash, role, domain FROM users WHERE username = ?",
         (username,)
     )
     user = cursor.fetchone()
@@ -15,13 +15,13 @@ def get_user_by_username(username):
     return user
 
 
-def insert_user(username, password_hash, role="user"):
+def insert_user(username, password_hash, role="user", domain=None):
     """Insert new user."""
     conn = connect_database()
     cursor = conn.cursor()
     cursor.execute(
-        "INSERT INTO users (username, password_hash, role) VALUES (?, ?, ?)",
-        (username, password_hash, role)
+        "INSERT INTO users (username, password_hash, role, domain) VALUES (?, ?, ?, ?)",
+        (username, password_hash, role, domain)
     )
     conn.commit()
     conn.close()
@@ -31,11 +31,11 @@ def get_all_users():
     """Return all users as a list of dictionaries."""
     conn = connect_database()
     cursor = conn.cursor()
-    cursor.execute("SELECT username, role FROM users ORDER BY username ASC")
+    cursor.execute("SELECT username, role, domain FROM users ORDER BY username ASC")
     rows = cursor.fetchall()
     conn.close()
     return [
-        {"username": row[0], "role": row[1]}
+        {"username": row[0], "role": row[1], "domain": row[2]}
         for row in rows
     ]
 
@@ -52,14 +52,16 @@ def update_user_role(username, new_role):
     updated = cursor.rowcount
 
     password_hash = ""
+    domain_value = ""
     if updated:
         cursor.execute(
-            "SELECT password_hash FROM users WHERE username = ?",
+            "SELECT password_hash, domain FROM users WHERE username = ?",
             (username,)
         )
         row = cursor.fetchone()
         if row:
             password_hash = row[0]
+            domain_value = row[1] or ""
     conn.close()
 
     if not updated:
@@ -80,20 +82,22 @@ def update_user_role(username, new_role):
             updated_lines.append(raw_line)
             continue
 
-        parts = stripped.split(",", 2)
+        parts = stripped.split(",", 3)
         if len(parts) < 3:
             updated_lines.append(raw_line)
             continue
 
-        file_user, hash_value, _role = parts
+        file_user, hash_value, _role = parts[:3]
+        domain = parts[3] if len(parts) > 3 else ""
         if file_user == username:
             user_found_in_file = True
-            updated_lines.append(f"{username},{hash_value},{new_role}\n")
+            current_domain = domain.strip() or domain_value
+            updated_lines.append(f"{username},{hash_value},{new_role},{current_domain}\n")
         else:
             updated_lines.append(raw_line)
 
     if not user_found_in_file:
-        updated_lines.append(f"{username},{password_hash},{new_role}\n")
+        updated_lines.append(f"{username},{password_hash},{new_role},{domain_value}\n")
 
     with open(USER_DATA_FILE, "w") as f:
         f.writelines(updated_lines)
@@ -124,7 +128,7 @@ def delete_user(username):
         stripped = raw_line.strip()
         if not stripped:
             continue
-        parts = stripped.split(",", 2)
+        parts = stripped.split(",", 3)
         if len(parts) < 3:
             updated_lines.append(raw_line)
             continue
@@ -185,7 +189,7 @@ def reset_user_password(username, new_password):
             continue
 
         #Divide line into 2 parts
-        parts = stripped.split(",", 2)
+        parts = stripped.split(",", 3)
 
         #Verify if line contains less than 3 parts
         if len(parts) < 3:
@@ -194,7 +198,8 @@ def reset_user_password(username, new_password):
             continue
 
         #Store parts of line in variables
-        file_user, _hash_value, role = parts
+        file_user, _hash_value, role = parts[:3]
+        domain = parts[3] if len(parts) > 3 else ""
 
         #Skip line and store in updated line if selected user does not match
         if file_user != username:
@@ -202,7 +207,7 @@ def reset_user_password(username, new_password):
             continue
 
         #if user is found, password is updated and new line is written in file
-        updated_lines.append(f"{username},{hashed_password},{role}\n")
+        updated_lines.append(f"{username},{hashed_password},{role},{domain.strip()}\n")
         #Set flag to true
         file_updated = True
 

@@ -2,3 +2,4 @@ bob,b'$2b$12$KAewI6pklfAqlWvslET/c.Umldp0KBks/4mIwZuUimSEXPib0SwBC',user
 Zayna,$2b$12$/lB36ELhOyP5B7slSdW6seV.DPNySnbhEUCT6Q4ahhWY6sIyy.9MS,admin
 alice,$2b$12$3TIakSKQI01RedetkI4cIOfR4/60cs7ftwX4L4bCNbcfOQd9ruG/G,analyst,Cyber Security
 ana,$2b$12$X78MmkCpS41pCYNiaPmyEOKHCHojvoelHYZw1QS2vTB3VgXHvTLUS,user,
+Anna,$2b$12$nMa1HaCKAQJ7rwziCWYOMOaM9FxKUfFVgsvPWDVsGJeX/6CyoUFwm,admin,Data Science

@@ -40,13 +40,16 @@ def get_all_users():
     ]
 
 
-def update_user_role(username, new_role):
-    """Update role for a given user."""
+def update_user_role(username, new_role, new_domain=None):
+    """Update role (and domain) for a given user."""
+    if new_role != "analyst":
+        new_domain = None
+
     conn = connect_database()
     cursor = conn.cursor()
     cursor.execute(
-        "UPDATE users SET role = ? WHERE username = ?",
-        (new_role, username)
+        "UPDATE users SET role = ?, domain = ? WHERE username = ?",
+        (new_role, new_domain, username)
     )
     conn.commit()
     updated = cursor.rowcount

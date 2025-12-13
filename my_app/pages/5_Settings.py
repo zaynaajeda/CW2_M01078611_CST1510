@@ -13,7 +13,7 @@ sys.path.append(ROOT_DIR)
 from app.data.db import connect_database
 from my_app.components.sidebar import logout_section
 from app.services.user_service import migrate_users_from_file
-from app.services.auth import change_password, valid_roles, USER_DATA_FILE
+from app.services.auth import change_password, valid_roles, valid_analyst_domains, USER_DATA_FILE
 from models.auth import User
 from app.data.users import (get_all_users,
                             update_user_role,
@@ -95,9 +95,13 @@ with st.form("change_password_form"):
     new_password = st.text_input("New Password", type="password")
     confirm_password = st.text_input("Confirm New Password", type="password")
 
+    #Inform user what password should contain
+    st.info("Passwords must contain 7-50 characters and include at least one uppercase letter, "
+             "one lowercase letter, one number, and one special character.")
+
     #Button to update password
     submitted = st.form_submit_button("Update Password")
-
+    
 #Verify if form is submitted
 if submitted:
     #Verify is all fields were filled
@@ -154,8 +158,9 @@ if role_user == "admin":
         #Inform user
         st.info("No registered users found.")
     else:
-        #Display users in a table
-        st.dataframe(users, use_container_width=True)
+        #Display users in a table using placeholder for dynamic updates
+        users_table = st.empty()
+        users_table.dataframe(users, use_container_width=True)
 
         st.markdown("##### Update User Role")
 
@@ -164,6 +169,12 @@ if role_user == "admin":
             #Prompt user to select username and new role
             selected_user = st.selectbox("Select user", usernames)
             new_role = st.selectbox("New role", valid_roles)
+
+            #Choose domain if user clicked "analyst"
+            domain_choice = st.selectbox("Analyst domain", valid_analyst_domains, key="settings_analyst_domain_select",
+                                        help="Choose domain for analyst account.", disabled=new_role != "analyst")    # disabled part prevents user from accessing
+                                                                                                                      # unless analyst is chosem
+            selected_domain = domain_choice if new_role == "analyst" else None
 
             #Checkbox to confirm role update
             confirm_update = st.checkbox("Yes, update this user's role")
@@ -179,12 +190,15 @@ if role_user == "admin":
                 st.warning("Please confirm the role update before proceeding.")
             else:
                 #Proceed with update of role
-                success, msg = update_user_role(selected_user, new_role)
+                success, msg = update_user_role(selected_user, new_role, selected_domain)
 
                 #Check boolean value of success
                 if success:
                     #Inform user about update of role
                     st.success(msg)
+                    #Refresh users table to reflect updated role
+                    updated_users = get_all_users()
+                    users_table.dataframe(updated_users, use_container_width=True)
                     #Pause program for 1s
                     time.sleep(1)
                     #Rerun whole program
@@ -253,6 +267,10 @@ if role_user == "admin":
 
             #Submit button for form
             submit_reset = st.form_submit_button("Reset Password")
+
+            #Inform user what password should contain
+            st.info("Passwords must contain 7-50 characters and include at least one uppercase letter, "
+                    "one lowercase letter, one number, and one special character.")
 
         #Verify if form is submitted
         if submit_reset:

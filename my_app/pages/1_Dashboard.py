@@ -13,13 +13,12 @@ from app.data.db import connect_database
 
 #Import incident management functions
 from app.data.incidents import (
-    insert_incident,
     delete_incident,
     get_open_incidents,
     get_high_or_critical_incidents)
 
-#Import class Cyberincident
-from models.incidents import Cyberincident
+#Import classes
+from models.incidents import Cybersecurity, Cyberincident
 
 #Import datasets management functions
 from app.data.datasets import (
@@ -35,13 +34,12 @@ from models.datasets import Dataset
 #Import tickets management functions
 from app.data.tickets import (
     get_all_tickets,
-    insert_ticket,
     delete_ticket,
     get_open_tickets,
     get_high_or_critical_tickets)
 
 #Import class ITTicket
-from models.tickets import ITTicket
+from models.tickets import ITTicket, NewITTicket
 
 from my_app.components.sidebar import logout_section
 
@@ -139,7 +137,7 @@ else:
         st.markdown("##### Overview of Incidents")
 
         #Create object/instance for class Cyberincident
-        incident_oop = Cyberincident()
+        incident_oop = Cybersecurity()
 
         #Fetches all incidents from database using method from class
         incidents = incident_oop.get_all_incidents()
@@ -215,14 +213,12 @@ else:
                         #Inform user to fill all fields
                         st.warning("Please fill in all fields.")
                     else:
-                        #Insert new incident into database
-                        insert_incident(
-                            date.strftime("%Y-%m-%d"),  #Convert date into year-month-day format
-                            incident_type,
-                            severity,
-                            status,
-                            description,
-                            reported_by=st.session_state.username)
+                        #Create object/instance using class Cyberincident
+                        new_incident_oop = Cyberincident(date.strftime("%Y-%m-%d"), incident_type, severity, status,
+                                                        description, st.session_state.username)
+                        
+                        #Insert new incident into database using method from class
+                        new_incident_oop.insert_incident()
                         
                         #Success message
                         st.success("New incident added successfully.")
@@ -557,16 +553,13 @@ else:
                     #Convert resolved days into string
                     resolved_days = str(resolved_days)
 
-                    #Insert new ticket into database
-                    insert_ticket(
-                        ticket_priority,
-                        ticket_status,
-                        ticket_category,
-                        ticket_subject,
-                        ticket_description,
-                        ticket_created_date.strftime("%Y-%m-%d"),
-                        resolved_days,
-                        assigned_to)
+                    #Create object/instance using class NewITTicket
+                    new_ticket = NewITTicket(ticket_priority, ticket_status, ticket_category, ticket_subject,
+                                            ticket_description,ticket_created_date.strftime("%Y-%m-%d"), resolved_days,
+                                            assigned_to)
+
+                    #Insert new ticket into database using method from class
+                    new_ticket.insert_ticket()
                     
                     #Success message
                     st.success("New ticket added successfully.")

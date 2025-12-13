@@ -63,6 +63,7 @@ The project offers a user-friendly website where user can create account, login 
 - Data layer: SQLite Database, csv, txt files
 
 ## Project Structure
+```
 .
 ├── DATA
 │   ├── cyber_incidents.csv
@@ -108,6 +109,7 @@ The project offers a user-friendly website where user can create account, login 
     ├── bin/…
     ├── lib/python3.13/site-packages/…
     └── (standard virtual env folders)
+```
 
 ## Streamlit Platform
 Key pages:

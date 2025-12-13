@@ -11,7 +11,7 @@ from app.data.incidents import (
     get_incidents_over_time)
 
 #Import class Cyberincident
-from models.incidents import Cyberincident
+from models.incidents import Cybersecurity
 
 #Import all datasets from database
 from app.data.datasets import (
@@ -137,7 +137,7 @@ if domain == "Cyber Security":
     #Each key contains a dashboard chart with its data as its value
 
     #Create object/instance for class Cyberincident
-    incident_oop = Cyberincident()
+    incident_oop = Cybersecurity()
     charts = {
         "incidents_over_time": get_incidents_over_time(conn),
         "incidents_by_type": get_incidents_by_type_count(conn),

@@ -2,7 +2,8 @@
 
 - Student Name: AJEDA Bibi Zayna
 - Student ID: M01078611
-- Course: CST1510 - CW2  
+- Course: Computer Science (Year 1)
+- Module: CST1510 - Coursework 2 - Programming for Data Communication and Networks  
 
 # Multi-Domain Intelligence Platform
 This repository contains the source code, all attached and necessary files and documentation for the intelligence platform. Video demonstration is available in 'vid_demo' folder.
@@ -149,3 +150,7 @@ streamlit run my_app/Home.py
 ### User
 - **Username:** ana
 - **Password:** SecurePass123
+
+## Troubleshooting
+- **`OPENAI_API_KEY` Key Error:** Ensure `.streamlit/secrets.toml` exists with `OPENAI_API_KEY`
+- **MISSING DATA FILES:** Run `main.py` in database to recreate database
